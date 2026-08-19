@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema Financeiro Grande FM 94.5 - Portal de Acesso Restrito e Gestão">
+    <title>Financeiro GFM | Rádio Grande FM 94.5</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Canvas for Animated Radio Waves -->
+    <canvas id="wavesCanvas"></canvas>
+    <div class="bg-overlay"></div>
+
+    <!-- ==========================================================================
+         VIEW 1: LOGIN SCREEN
+         ========================================================================== -->
+    <div id="loginView" class="view-screen">
+        <!-- Header / Top Bar Controls -->
+        <header class="top-bar">
+            <div class="station-badge">
+                <span class="pulse-dot"></span>
+                <span class="badge-text">94.5 FM • AO VIVO</span>
+            </div>
+            
+            <button class="theme-toggle-btn themeBtn" aria-label="Alternar Tema">
+                <i data-lucide="sun" class="sun-icon"></i>
+                <i data-lucide="moon" class="moon-icon"></i>
+            </button>
+        </header>
+
+        <!-- Main Login Container -->
+        <main class="login-wrapper">
+            <div class="login-card-container">
+                <!-- Glassmorphism Card -->
+                <div class="login-card">
+                    <!-- Logo Section -->
+                    <div class="logo-section">
+                        <div class="logo-wrapper">
+                            <img src="assets/logo.png" alt="Rádio Grande FM 94.5 Logo" class="brand-logo">
+                        </div>
+                        <h1 class="system-title">Financeiro <span class="gfm-highlight">GFM</span></h1>
+                        <p class="system-subtitle">Painel Integrado de Gestão e Controle</p>
+                    </div>
+
+                    <!-- Alert Message Box -->
+                    <div id="alertBox" class="alert-box hidden" role="alert">
+                        <i data-lucide="alert-circle" class="alert-icon"></i>
+                        <span id="alertMessage">Mensagem de aviso</span>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form id="loginForm" class="login-form" novalidate>
+                        <!-- Username/Email Field -->
+                        <div class="input-group">
+                            <label for="usernameInput">Usuário ou E-mail</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="user" class="input-icon"></i>
+                                <input 
+                                    type="text" 
+                                    id="usernameInput" 
+                                    name="username" 
+                                    placeholder="digite seu usuário ou e-mail" 
+                                    autocomplete="username"
+                                    required
+                                >
+                            </div>
+                            <span class="error-msg" id="usernameError"></span>
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="input-group">
+                            <label for="passwordInput">Senha de Acesso</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="lock" class="input-icon"></i>
+                                <input 
+                                    type="password" 
+                                    id="passwordInput" 
+                                    name="password" 
+                                    placeholder="••••••••••••" 
+                                    autocomplete="current-password"
+                                    required
+                                >
+                                <button type="button" id="togglePasswordBtn" class="toggle-password-btn" title="Mostrar/Ocultar Senha" aria-label="Mostrar/Ocultar Senha">
+                                    <i data-lucide="eye" id="eyeIcon"></i>
+                                    <i data-lucide="eye-off" id="eyeOffIcon" class="hidden"></i>
+                                </button>
+                            </div>
+                            <span class="error-msg" id="passwordError"></span>
+                        </div>
+
+                        <!-- Options Row -->
+                        <div class="form-options">
+                            <label class="remember-label">
+                                <input type="checkbox" id="rememberCheckbox" name="remember">
+                                <span class="checkbox-custom"></span>
+                                <span class="label-text">Manter conectado</span>
+                            </label>
+                            <a href="#" id="forgotPasswordLink" class="forgot-link">Esqueceu a senha?</a>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" id="submitBtn" class="submit-btn">
+                            <span class="btn-text">Entrar no Sistema</span>
+                            <i data-lucide="arrow-right" class="btn-icon"></i>
+                            <span class="spinner hidden"></span>
+                        </button>
+                    </form>
+
+                    <!-- Footer Security Badge -->
+                    <div class="card-footer">
+                        <div class="security-badge">
+                            <i data-lucide="shield-check"></i>
+                            <span>Acesso Seguro SSL 256-bit • Rádio Grande FM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==========================================================================
+         VIEW 2: MAIN DASHBOARD & SYSTEM APP
+         ========================================================================== -->
+    <div id="appView" class="view-screen hidden">
+        <div class="app-layout">
+            
+            <!-- Sidebar Navigation -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <img src="assets/logo.png" alt="Grande FM 94.5" class="sidebar-logo">
+                    <div class="sidebar-brand-text">
+                        <h2>Financeiro <span class="gfm-highlight">GFM</span></h2>
+                        <span class="sidebar-version">v2.4 Portal</span>
+                    </div>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <ul>
+                        <li>
+                            <a href="#" id="navDashboard" class="nav-item active" data-target="dashboardSection">
+                                <i data-lucide="layout-dashboard"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="navCollaborators" class="nav-item" data-target="collaboratorsSection">
+                                <i data-lucide="users"></i>
+                                <span>Colaboradores</span>
+                                <span class="nav-badge" id="sidebarCollaboratorsCount">0</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="navClients" class="nav-item" data-target="clientsSection">
+                                <i data-lucide="briefcase"></i>
+                                <span>Clientes & Anunciantes</span>
+                                <span class="nav-badge" id="sidebarClientsCount">0</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="navFinancial" class="nav-item" data-target="financialSection">
+                                <i data-lucide="dollar-sign"></i>
+                                <span>Financeiro & DRE</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="navSettings" class="nav-item" data-target="settingsSection">
+                                <i data-lucide="settings"></i>
+                                <span>Configurações</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="user-profile">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar Usuário" class="user-avatar">
+                        <div class="user-info">
+                            <span class="user-name" id="loggedInUserName">Admin GFM</span>
+                            <span class="user-role">Gestor Financeiro</span>
+                        </div>
+                    </div>
+                    <button id="logoutBtn" class="logout-btn" title="Encerrar Sessão">
+                        <i data-lucide="log-out"></i>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Sidebar Overlay for Mobile -->
+            <div id="sidebarOverlay" class="sidebar-overlay hidden"></div>
+
+            <!-- Main Workspace Area -->
+            <div class="app-workspace">
+                
+                <!-- Workspace Topbar Header -->
+                <header class="workspace-header">
+                    <div class="header-left">
+                        <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Abrir Menu">
+                            <i data-lucide="menu"></i>
+                        </button>
+                        <div>
+                            <h1 id="pageTitle" class="page-title">Dashboard</h1>
+                            <p id="pageSubtitle" class="page-subtitle">Visão geral do desempenho e equipe da Rádio Grande FM 94.5</p>
+                        </div>
+                    </div>
+
+                    <div class="header-right">
+                        <div class="station-status-pill">
+                            <span class="pulse-dot"></span>
+                            <span>Grande FM 94.5 Ao Vivo</span>
+                        </div>
+
+                        <button class="theme-toggle-btn themeBtn" aria-label="Alternar Tema">
+                            <i data-lucide="sun" class="sun-icon"></i>
+                            <i data-lucide="moon" class="moon-icon"></i>
+                        </button>
+
+                        <div class="notification-bell" id="notificationBtn" title="Notificações">
+                            <i data-lucide="bell"></i>
+                            <span class="bell-dot"></span>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Dynamic Workspace Sections -->
+                <main class="workspace-content">
+                    
+                    <!-- SECTION 1: DASHBOARD -->
+                    <section id="dashboardSection" class="content-section">
+                        <!-- Metric Cards Row -->
+                        <div class="kpi-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-icon blue">
+                                    <i data-lucide="users"></i>
+                                </div>
+                                <div class="kpi-details">
+                                    <span class="kpi-label">Total de Colaboradores</span>
+                                    <h3 class="kpi-value" id="kpiCollaborators">0</h3>
+                                    <span class="kpi-subtext positive"><i data-lucide="trending-up"></i> +2 este mês</span>
+                                </div>
+                            </div>
+
+                            <div class="kpi-card">
+                                <div class="kpi-icon green">
+                                    <i data-lucide="wallet"></i>
+                                </div>
+                                <div class="kpi-details">
+                                    <span class="kpi-label">Folha Salarial Mensal</span>
+                                    <h3 class="kpi-value" id="kpiPayroll">R$ 0,00</h3>
+                                    <span class="kpi-subtext">Total de salários ativos</span>
+                                </div>
+                            </div>
+
+                            <div class="kpi-card">
+                                <div class="kpi-icon gold">
+                                    <i data-lucide="pie-chart"></i>
+                                </div>
+                                <div class="kpi-details">
+                                    <span class="kpi-label">Receita Comercial (Mês)</span>
+                                    <h3 class="kpi-value" id="kpiClientRevenue">R$ 0,00</h3>
+                                    <span class="kpi-subtext positive"><i data-lucide="trending-up"></i> Contratos Ativos GFM</span>
+                                </div>
+                            </div>
+
+                            <div class="kpi-card">
+                                <div class="kpi-icon purple">
+                                    <i data-lucide="building-2"></i>
+                                </div>
+                                <div class="kpi-details">
+                                    <span class="kpi-label">Clientes & Anunciantes</span>
+                                    <h3 class="kpi-value" id="kpiClientsCount">0</h3>
+                                    <span class="kpi-subtext">Patrocinadores 94.5 FM</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions Banner -->
+                        <div class="banner-card">
+                            <div class="banner-content">
+                                <h2>Gestão de Equipe & Anunciantes Grande FM</h2>
+                                <p>Gerencie contratações, funções, dados cadastrais e contratos de mídia comercial da emissora.</p>
+                            </div>
+                            <div class="banner-btn-group">
+                                <button id="quickAddCollaboratorBtn" class="primary-action-btn">
+                                    <i data-lucide="user-plus"></i>
+                                    <span>Adicionar Colaborador</span>
+                                </button>
+                                <button id="quickAddClientBtn" class="primary-action-btn gold-btn">
+                                    <i data-lucide="briefcase"></i>
+                                    <span>Adicionar Cliente</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Dashboard Charts & Lists Row -->
+                        <div class="dashboard-grid">
+                            <!-- Department Salary Distribution -->
+                            <div class="panel-card">
+                                <div class="panel-header">
+                                    <h3>Custo de Folha por Departamento</h3>
+                                    <i data-lucide="layers" class="panel-icon"></i>
+                                </div>
+                                <div class="dept-distribution-list" id="deptDistributionList">
+                                    <!-- Populated via JS -->
+                                </div>
+                            </div>
+
+                            <!-- Recent System Activities -->
+                            <div class="panel-card">
+                                <div class="panel-header">
+                                    <h3>Atividades Recentes do Sistema</h3>
+                                    <i data-lucide="activity" class="panel-icon"></i>
+                                </div>
+                                <div class="activity-feed">
+                                    <div class="activity-item">
+                                        <div class="activity-icon blue"><i data-lucide="user-check"></i></div>
+                                        <div class="activity-text">
+                                            <strong>Novo Colaborador Cadastrado</strong>
+                                            <span>Locutor Principal adicionado ao setor de Programação</span>
+                                            <small>Hoje às 14:30</small>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon gold"><i data-lucide="briefcase"></i></div>
+                                        <div class="activity-text">
+                                            <strong>Novo Contrato Comercial Fechado</strong>
+                                            <span>Supermercado Dourados fechou cota anual 94.5 FM</span>
+                                            <small>Hoje às 11:15</small>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon green"><i data-lucide="dollar-sign"></i></div>
+                                        <div class="activity-text">
+                                            <strong>Folha de Pagamento Processada</strong>
+                                            <span>Salários do mês de Agosto finalizados</span>
+                                            <small>Ontem às 18:00</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 2: AREA DE COLABORADORES -->
+                    <section id="collaboratorsSection" class="content-section hidden">
+                        <!-- Toolbar Controls -->
+                        <div class="section-toolbar">
+                            <div class="toolbar-search">
+                                <i data-lucide="search" class="search-icon"></i>
+                                <input type="text" id="searchCollaboratorInput" placeholder="Buscar por nome, cargo, e-mail ou CPF...">
+                            </div>
+
+                            <div class="toolbar-filters">
+                                <select id="deptFilterSelect" class="filter-select">
+                                    <option value="ALL">Todos os Departamentos</option>
+                                    <option value="Jornalismo">Jornalismo</option>
+                                    <option value="Comercial">Comercial</option>
+                                    <option value="Técnico & Som">Técnico & Som</option>
+                                    <option value="Programação">Programação</option>
+                                    <option value="Administrativo">Administrativo</option>
+                                    <option value="Financeiro">Financeiro</option>
+                                </select>
+
+                                <select id="statusFilterSelect" class="filter-select">
+                                    <option value="ALL">Todos os Status</option>
+                                    <option value="Ativo">Ativos</option>
+                                    <option value="Férias">Em Férias</option>
+                                    <option value="Inativo">Inativos</option>
+                                </select>
+
+                                <button id="openAddModalBtn" class="primary-action-btn">
+                                    <i data-lucide="plus"></i>
+                                    <span>Adicionar Colaborador</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Data Table Container -->
+                        <div class="table-container-card">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Colaborador</th>
+                                        <th>Cargo / Função</th>
+                                        <th>Departamento</th>
+                                        <th>CPF</th>
+                                        <th>Salário (R$)</th>
+                                        <th>Admissão</th>
+                                        <th>Status</th>
+                                        <th class="text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="collaboratorsTableBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+
+                            <div id="emptyState" class="empty-state hidden">
+                                <i data-lucide="users-round" class="empty-icon"></i>
+                                <h3>Nenhum colaborador encontrado</h3>
+                                <p>Tente ajustar a busca ou adicione um novo integrante à equipe GFM.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 3: AREA DE CLIENTES E ANUNCIANTES -->
+                    <section id="clientsSection" class="content-section hidden">
+                        <!-- Toolbar Controls -->
+                        <div class="section-toolbar">
+                            <div class="toolbar-search">
+                                <i data-lucide="search" class="search-icon"></i>
+                                <input type="text" id="searchClientInput" placeholder="Buscar por cliente, razão social, CNPJ ou executivo...">
+                            </div>
+
+                            <div class="toolbar-filters">
+                                <select id="segmentFilterSelect" class="filter-select">
+                                    <option value="ALL">Todos os Segmentos</option>
+                                    <option value="Comércio Local">Comércio Local</option>
+                                    <option value="Agência de Publicidade">Agência de Publicidade</option>
+                                    <option value="Indústria">Indústria</option>
+                                    <option value="Serviços">Serviços</option>
+                                    <option value="Eventos & Shows">Eventos & Shows</option>
+                                </select>
+
+                                <select id="clientStatusFilterSelect" class="filter-select">
+                                    <option value="ALL">Todos os Status</option>
+                                    <option value="Ativo">Contrato Ativo</option>
+                                    <option value="Em Negociação">Em Negociação</option>
+                                    <option value="Encerrado">Encerrado</option>
+                                </select>
+
+                                <button id="openAddClientModalBtn" class="primary-action-btn gold-btn">
+                                    <i data-lucide="plus"></i>
+                                    <span>Adicionar Cliente</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Data Table Container -->
+                        <div class="table-container-card">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cliente / Empresa</th>
+                                        <th>CNPJ / CPF</th>
+                                        <th>Segmento</th>
+                                        <th>Colaborador Responsável</th>
+                                        <th>Comissão (%)</th>
+                                        <th>Valor Mensal (R$)</th>
+                                        <th>Vencimento</th>
+                                        <th>Status</th>
+                                        <th class="text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clientsTableBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+
+                            <div id="emptyClientState" class="empty-state hidden">
+                                <i data-lucide="briefcase" class="empty-icon"></i>
+                                <h3>Nenhum cliente cadastrado</h3>
+                                <p>Cadastre novos anunciantes e patrocinadores comerciais da Rádio Grande FM 94.5.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 4: PLACEHOLDER OUTRAS SEÇÕES -->
+                    <section id="financialSection" class="content-section hidden">
+                        <div class="panel-card placeholder-panel">
+                            <i data-lucide="circle-dollar-sign" class="placeholder-icon"></i>
+                            <h2>Módulo Financeiro & DRE Grande FM</h2>
+                            <p>Controle de fluxo de caixa, patrocínios comerciais e centro de custos em desenvolvimento.</p>
+                        </div>
+                    </section>
+
+                    <section id="settingsSection" class="content-section hidden">
+                        <div class="panel-card placeholder-panel">
+                            <i data-lucide="settings" class="placeholder-icon"></i>
+                            <h2>Configurações do Sistema</h2>
+                            <p>Parâmetros de segurança SSL, permissões de usuários e backup do banco de dados GFM.</p>
+                        </div>
+                    </section>
+
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 1: ADICIONAR / EDITAR COLABORADOR
+         ========================================================================== -->
+    <div id="collaboratorModal" class="modal-backdrop hidden">
+        <div class="modal-card modal-lg">
+            <button id="closeCollaboratorModalBtn" class="modal-close-btn">&times;</button>
+            
+            <div class="modal-header">
+                <div class="modal-icon blue">
+                    <i data-lucide="user-plus"></i>
+                </div>
+                <h2 id="modalTitle">Cadastrar Novo Colaborador</h2>
+                <p>Insira os dados do integrante da equipe da Rádio Grande FM 94.5</p>
+            </div>
+
+            <form id="collaboratorForm" class="modal-form">
+                <input type="hidden" id="collabId">
+
+                <div class="form-grid">
+                    <!-- Código do Colaborador (auto-gerado) -->
+                    <div class="input-group">
+                        <label for="collabCode">Código do Colaborador</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="hash" class="input-icon"></i>
+                            <input type="text" id="collabCode" placeholder="Gerado automaticamente" readonly style="opacity:0.7;cursor:not-allowed;">
+                        </div>
+                    </div>
+
+                    <!-- Nome Completo -->
+                    <div class="input-group">
+                        <label for="collabName">Nome Completo *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="user" class="input-icon"></i>
+                            <input type="text" id="collabName" placeholder="Ex: Carlos Eduardo da Silva" required>
+                        </div>
+                    </div>
+
+                    <!-- E-mail Corporativo -->
+                    <div class="input-group">
+                        <label for="collabEmail">E-mail Corporativo *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="mail" class="input-icon"></i>
+                            <input type="email" id="collabEmail" placeholder="carlos@grandefm.com.br" required>
+                        </div>
+                    </div>
+
+                    <!-- CPF -->
+                    <div class="input-group">
+                        <label for="collabCpf">CPF *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="id-card" class="input-icon"></i>
+                            <input type="text" id="collabCpf" placeholder="000.000.000-00" required>
+                        </div>
+                    </div>
+
+                    <!-- Cargo / Função -->
+                    <div class="input-group">
+                        <label for="collabRole">Cargo / Função *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="briefcase" class="input-icon"></i>
+                            <input type="text" id="collabRole" placeholder="Ex: Locutor Principal / Apresentador" required>
+                        </div>
+                    </div>
+
+                    <!-- Departamento -->
+                    <div class="input-group">
+                        <label for="collabDept">Departamento *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="building-2" class="input-icon"></i>
+                            <select id="collabDept" required>
+                                <option value="Jornalismo">Jornalismo</option>
+                                <option value="Comercial">Comercial</option>
+                                <option value="Técnico & Som">Técnico & Som</option>
+                                <option value="Programação">Programação</option>
+                                <option value="Administrativo">Administrativo</option>
+                                <option value="Financeiro">Financeiro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Salário R$ -->
+                    <div class="input-group">
+                        <label for="collabSalary">Salário Mensal (R$) *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="dollar-sign" class="input-icon"></i>
+                            <input type="number" id="collabSalary" step="0.01" placeholder="4500.00" required>
+                        </div>
+                    </div>
+
+                    <!-- Data Admissão -->
+                    <div class="input-group">
+                        <label for="collabHireDate">Data de Admissão *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="calendar" class="input-icon"></i>
+                            <input type="date" id="collabHireDate" required>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="input-group">
+                        <label for="collabStatus">Status de Contrato *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="activity" class="input-icon"></i>
+                            <select id="collabStatus" required>
+                                <option value="Ativo">Ativo</option>
+                                <option value="Férias">Em Férias</option>
+                                <option value="Inativo">Inativo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Upload da Foto do Colaborador -->
+                    <div class="input-group full-col">
+                        <label>Foto do Colaborador *</label>
+                        <div class="photo-upload-area">
+                            <div class="photo-preview-wrapper">
+                                <img id="photoPreview" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Preview da Foto" class="photo-preview-img">
+                            </div>
+                            <div class="upload-controls">
+                                <label for="collabPhotoFile" class="upload-btn">
+                                    <i data-lucide="upload"></i>
+                                    <span>Escolher Foto do Dispositivo</span>
+                                </label>
+                                <input type="file" id="collabPhotoFile" accept="image/*" class="hidden-file-input">
+                                <span class="upload-hint">Formatos aceitos: JPG, PNG, WEBP. Tamanho recomendado: 300x300.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="cancelCollabBtn" class="secondary-btn">Cancelar</button>
+                    <button type="submit" class="submit-btn">
+                        <i data-lucide="save"></i>
+                        <span>Salvar Colaborador</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 2: ADICIONAR / EDITAR CLIENTE ANUNCIANTE
+         ========================================================================== -->
+    <div id="clientModal" class="modal-backdrop hidden">
+        <div class="modal-card modal-lg">
+            <button id="closeClientModalBtn" class="modal-close-btn">&times;</button>
+            
+            <div class="modal-header">
+                <div class="modal-icon gold">
+                    <i data-lucide="briefcase"></i>
+                </div>
+                <h2 id="clientModalTitle">Cadastrar Novo Cliente Anunciante</h2>
+                <p>Insira as informações comerciais do patrocinador da Rádio Grande FM 94.5</p>
+            </div>
+
+            <form id="clientForm" class="modal-form">
+                <input type="hidden" id="clientId">
+
+                <div class="form-grid">
+                    <!-- Razão Social / Nome Fantasia -->
+                    <div class="input-group full-col">
+                        <label for="clientName">Razão Social / Nome Fantasia *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="building" class="input-icon"></i>
+                            <input type="text" id="clientName" placeholder="Ex: Supermercados Dourados Ltda" required>
+                        </div>
+                    </div>
+
+                    <!-- CNPJ / CPF -->
+                    <div class="input-group">
+                        <label for="clientCnpj">CNPJ ou CPF *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="file-text" class="input-icon"></i>
+                            <input type="text" id="clientCnpj" placeholder="00.000.000/0001-00" required>
+                        </div>
+                    </div>
+
+                    <!-- E-mail Comercial -->
+                    <div class="input-group">
+                        <label for="clientEmail">E-mail de Contato *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="mail" class="input-icon"></i>
+                            <input type="email" id="clientEmail" placeholder="comercial@empresa.com.br" required>
+                        </div>
+                    </div>
+
+                    <!-- Telefone / WhatsApp -->
+                    <div class="input-group">
+                        <label for="clientPhone">Telefone / WhatsApp *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="phone" class="input-icon"></i>
+                            <input type="text" id="clientPhone" placeholder="(67) 99999-8888" required>
+                        </div>
+                    </div>
+
+                    <!-- Segmento Comercial -->
+                    <div class="input-group">
+                        <label for="clientSegment">Segmento do Anunciante *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="tag" class="input-icon"></i>
+                            <select id="clientSegment" required>
+                                <option value="Comércio Local">Comércio Local</option>
+                                <option value="Agência de Publicidade">Agência de Publicidade</option>
+                                <option value="Indústria">Indústria</option>
+                                <option value="Serviços">Serviços</option>
+                                <option value="Eventos & Shows">Eventos & Shows</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Valor Mensal do Contrato R$ -->
+                    <div class="input-group">
+                        <label for="clientValue">Valor Mensal do Contrato (R$) *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="dollar-sign" class="input-icon"></i>
+                            <input type="number" id="clientValue" step="0.01" placeholder="12500.00" required>
+                        </div>
+                    </div>
+
+                    <!-- Seção Dinâmica: Colaboradores Responsáveis & Comissões -->
+                    <div class="input-group full-col">
+                        <div class="section-label-row">
+                            <label>Colaboradores Responsáveis & Comissões *</label>
+                            <span class="label-hint">Pesquise por código ou nome. Você pode adicionar mais de um colaborador.</span>
+                        </div>
+                        
+                        <div id="clientCollaboratorsList" class="collaborators-dynamic-list">
+                            <!-- Preenchido via JS -->
+                        </div>
+
+                        <button type="button" id="addCollaboratorRowBtn" class="add-collab-row-btn">
+                            <i data-lucide="plus-circle"></i>
+                            <span>Adicionar outro colaborador responsável</span>
+                        </button>
+                    </div>
+
+                    <!-- Data Início do Contrato -->
+                    <div class="input-group">
+                        <label for="clientStartDate">Data de Início *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="calendar" class="input-icon"></i>
+                            <input type="date" id="clientStartDate" required>
+                        </div>
+                    </div>
+
+                    <!-- Data Término do Contrato -->
+                    <div class="input-group">
+                        <label for="clientEndDate">Data de Vencimento *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="calendar-check" class="input-icon"></i>
+                            <input type="date" id="clientEndDate" required>
+                        </div>
+                    </div>
+
+                    <!-- Status do Contrato -->
+                    <div class="input-group full-col">
+                        <label for="clientStatus">Status do Contrato *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="activity" class="input-icon"></i>
+                            <select id="clientStatus" required>
+                                <option value="Ativo">Contrato Ativo</option>
+                                <option value="Em Negociação">Em Negociação</option>
+                                <option value="Encerrado">Encerrado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Upload da Logo/Foto da Empresa -->
+                    <div class="input-group full-col">
+                        <label>Logo / Imagem da Empresa Cliente *</label>
+                        <div class="photo-upload-area">
+                            <div class="photo-preview-wrapper">
+                                <img id="clientLogoPreview" src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&auto=format&fit=crop&q=80" alt="Preview da Logo do Cliente" class="photo-preview-img">
+                            </div>
+                            <div class="upload-controls">
+                                <label for="clientLogoFile" class="upload-btn gold-upload-btn">
+                                    <i data-lucide="upload"></i>
+                                    <span>Escolher Logo do Dispositivo</span>
+                                </label>
+                                <input type="file" id="clientLogoFile" accept="image/*" class="hidden-file-input">
+                                <span class="upload-hint">Formatos: PNG, JPG, SVG. Recomendado fundo transparente.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="cancelClientBtn" class="secondary-btn">Cancelar</button>
+                    <button type="submit" class="submit-btn gold-btn">
+                        <i data-lucide="save"></i>
+                        <span>Salvar Cliente</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Radio Audio Widget -->
+    <div class="radio-widget" id="radioWidget">
+        <div class="radio-info">
+            <div class="audio-waves-icon">
+                <span></span><span></span><span></span><span></span>
+            </div>
+            <div class="radio-text">
+                <span class="radio-title">Grande FM 94.5</span>
+                <span class="radio-slogan">Grande como você</span>
+            </div>
+        </div>
+        <button id="radioPlayBtn" class="radio-play-btn" aria-label="Ouvir Rádio Ao Vivo">
+            <i data-lucide="play" id="radioPlayIcon"></i>
+            <i data-lucide="pause" id="radioPauseIcon" class="hidden"></i>
+        </button>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Modal Esqueceu a Senha -->
+    <div id="forgotModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <button id="closeModalBtn" class="modal-close-btn">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i data-lucide="key-round"></i>
+                </div>
+                <h2>Recuperar Acesso</h2>
+                <p>Insira seu e-mail cadastrado para receber as instruções de redefinição de senha.</p>
+            </div>
+            <form id="forgotForm" class="modal-form">
+                <div class="input-group">
+                    <label for="recoveryEmail">E-mail Corporativo</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="mail" class="input-icon"></i>
+                        <input type="email" id="recoveryEmail" placeholder="seu.nome@grandefm.com.br" required>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn full-width">
+                    <span>Enviar Link de Recuperação</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

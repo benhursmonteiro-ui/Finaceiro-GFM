@@ -1,0 +1,25 @@
+{
+  "name": "financeiro-gfm",
+  "version": "2.0.0",
+  "description": "Sistema Financeiro, Gestão de Colaboradores e Clientes Anunciantes - Rádio Grande FM 94.5",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "grande-fm",
+    "financeiro",
+    "dashboard",
+    "colaboradores",
+    "clientes",
+    "express",
+    "backend"
+  ],
+  "author": "Rádio Grande FM 94.5",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "collaborators": [
+    {
+      "id": "1786660593059",
+      "code": "07",
+      "name": "Benhur",
+      "email": "benhur.s.monteiro@gmail.com",
+      "cpf": "10668917377",
+      "role": "Programador",
+      "dept": "Programação",
+      "salary": 4500,
+      "hireDate": "2026-08-14",
+      "status": "Ativo",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "1",
+      "code": "01",
+      "name": "Carlos Eduardo Oliveira",
+      "email": "carlos.eduardo@grandefm.com.br",
+      "cpf": "123.456.789-00",
+      "role": "Locutor Principal / Apresentador",
+      "dept": "Programação",
+      "salary": 6800,
+      "hireDate": "2021-03-15",
+      "status": "Ativo",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "2",
+      "code": "02",
+      "name": "Mariana Alves Prado",
+      "email": "mariana.alves@grandefm.com.br",
+      "cpf": "234.567.890-11",
+      "role": "Gerente Comercial de Vendas",
+      "dept": "Comercial",
+      "salary": 8500,
+      "hireDate": "2020-08-01",
+      "status": "Ativo",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "3",
+      "code": "03",
+      "name": "Roberto Santos Silva",
+      "email": "roberto.santos@grandefm.com.br",
+      "cpf": "345.678.901-22",
+      "role": "Engenheiro de Som & Transmissão",
+      "dept": "Técnico & Som",
+      "salary": 5400,
+      "hireDate": "2019-11-10",
+      "status": "Ativo",
+      "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "4",
+      "code": "04",
+      "name": "Fernanda Lima Castro",
+      "email": "fernanda.lima@grandefm.com.br",
+      "cpf": "456.789.012-33",
+      "role": "Jornalista & Repórter de Campo",
+      "dept": "Jornalismo",
+      "salary": 4900,
+      "hireDate": "2022-05-20",
+      "status": "Férias",
+      "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "5",
+      "code": "05",
+      "name": "Lucas Mendes Rocha",
+      "email": "lucas.mendes@grandefm.com.br",
+      "cpf": "567.890.123-44",
+      "role": "Operador de Áudio & Vinhetas",
+      "dept": "Programação",
+      "salary": 3800,
+      "hireDate": "2023-01-10",
+      "status": "Ativo",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "6",
+      "code": "06",
+      "name": "Juliana Prado Ribeiro",
+      "email": "juliana.prado@grandefm.com.br",
+      "cpf": "678.901.234-55",
+      "role": "Analista Financeiro Sênior",
+      "dept": "Financeiro",
+      "salary": 5600,
+      "hireDate": "2021-09-01",
+      "status": "Ativo",
+      "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80"
+    }
+  ],
+  "clients": [
+    {
+      "id": "c1",
+      "name": "Supermercados Dourados Ltda",
+      "cnpj": "11.222.333/0001-44",
+      "email": "comercial@superdourados.com.br",
+      "phone": "(67) 3411-9000",
+      "segment": "Comércio Local",
+      "value": 12500,
+      "executive": "02",
+      "commission": 10,
+      "executives": [
+        { "executive": "02", "commission": 10 }
+      ],
+      "startDate": "2025-02-01",
+      "endDate": "2027-02-01",
+      "status": "Ativo",
+      "logo": "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "c2",
+      "name": "Concessionária AutoVale Dourados",
+      "cnpj": "22.333.444/0001-55",
+      "email": "marketing@autovale.com.br",
+      "phone": "(67) 3422-5500",
+      "segment": "Comércio Local",
+      "value": 18000,
+      "executive": "02",
+      "commission": 8.5,
+      "executives": [
+        { "executive": "02", "commission": 8.5 },
+        { "executive": "06", "commission": 4 }
+      ],
+      "startDate": "2025-01-15",
+      "endDate": "2026-12-31",
+      "status": "Ativo",
+      "logo": "https://images.unsplash.com/photo-1549923746-c502d488b3ea?w=100&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "c3",
+      "name": "Agência Criativa Mídia Brasil",
+      "cnpj": "33.444.555/0001-66",
+      "email": "contato@criativamidia.com.br",
+      "phone": "(67) 99888-7766",
+      "segment": "Agência de Publicidade",
+      "value": 25000,
+      "executive": "01",
+      "commission": 12,
+      "executives": [
+        { "executive": "01", "commission": 12 }
+      ],
+      "startDate": "2025-06-01",
+      "endDate": "2027-06-30",
+      "status": "Ativo",
+      "logo": "https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=100&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "c4",
+      "name": "ExpoAgro Dourados 2026",
+      "cnpj": "44.555.666/0001-77",
+      "email": "patrocinio@expoagro.com.br",
+      "phone": "(67) 3410-2020",
+      "segment": "Eventos & Shows",
+      "value": 45000,
+      "executive": "02",
+      "commission": 5,
+      "executives": [
+        { "executive": "02", "commission": 5 },
+        { "executive": "01", "commission": 3 }
+      ],
+      "startDate": "2026-03-01",
+      "endDate": "2026-09-10",
+      "status": "Ativo",
+      "logo": "https://images.unsplash.com/photo-1511578314322-379afb476865?w=100&auto=format&fit=crop&q=80"
+    }
+  ]
+}
