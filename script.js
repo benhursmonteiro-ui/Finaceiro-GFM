@@ -509,9 +509,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (targetId === 'financialSection') {
                 pageTitle.textContent = 'Financeiro & DRE';
                 pageSubtitle.textContent = 'Demonstrativo de resultados e receitas comerciais';
+                loadFinancialOverview();
             } else if (targetId === 'settingsSection') {
                 pageTitle.textContent = 'Configurações';
                 pageSubtitle.textContent = 'Preferências do sistema e parâmetros de segurança';
+                loadSettingsOverview();
             }
 
             refreshIcons();
@@ -1340,22 +1342,865 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --------------------------------------------------------------------------
-    // 12. Radio Live Player Logic
+    // 12. Radio Live Player Logic (if present)
     // --------------------------------------------------------------------------
-    radioPlayBtn.addEventListener('click', () => {
-        isRadioPlaying = !isRadioPlaying;
+    if (typeof radioPlayBtn !== 'undefined' && radioPlayBtn) {
+        radioPlayBtn.addEventListener('click', () => {
+            isRadioPlaying = !isRadioPlaying;
 
-        if (isRadioPlaying) {
-            radioPlayIcon.classList.add('hidden');
-            radioPauseIcon.classList.remove('hidden');
-            audioWavesIcon.classList.add('playing');
-            showToast('Transmitindo Rádio Grande FM 94.5 Ao Vivo', 'success');
+            if (isRadioPlaying) {
+                if (radioPlayIcon) radioPlayIcon.classList.add('hidden');
+                if (radioPauseIcon) radioPauseIcon.classList.remove('hidden');
+                if (audioWavesIcon) audioWavesIcon.classList.add('playing');
+                showToast('Transmitindo Rádio Grande FM 94.5 Ao Vivo', 'success');
+            } else {
+                if (radioPlayIcon) radioPlayIcon.classList.remove('hidden');
+                if (radioPauseIcon) radioPauseIcon.classList.add('hidden');
+                if (audioWavesIcon) audioWavesIcon.classList.remove('playing');
+            }
+        });
+    }
+
+    // --------------------------------------------------------------------------
+    // 14. Módulo Financeiro Geral & DRE Logic (Rádio Grande FM 94.5)
+    // --------------------------------------------------------------------------
+    const INITIAL_TRANSACTIONS = [
+        {
+            id: 't1',
+            date: '2026-08-05',
+            description: 'Mensalidade Patrocínio Master - Supermercados Dourados',
+            type: 'Receita',
+            category: 'Receita Comercial',
+            amount: 12500.00,
+            status: 'Pago',
+            paymentMethod: 'PIX / Transferência',
+            entity: 'Supermercados Dourados Ltda'
+        },
+        {
+            id: 't2',
+            date: '2026-08-10',
+            description: 'Cota de Patrocínio Comercial - AutoVale Dourados',
+            type: 'Receita',
+            category: 'Receita Comercial',
+            amount: 18000.00,
+            status: 'Pago',
+            paymentMethod: 'Boleto Bancário',
+            entity: 'Concessionária AutoVale Dourados'
+        },
+        {
+            id: 't3',
+            date: '2026-08-12',
+            description: 'Contrato Publicidade Trimestral - Agência Criativa',
+            type: 'Receita',
+            category: 'Receita Comercial',
+            amount: 25000.00,
+            status: 'Pago',
+            paymentMethod: 'Transferência Bancária',
+            entity: 'Agência Criativa Mídia Brasil'
+        },
+        {
+            id: 't4',
+            date: '2026-08-15',
+            description: 'Cota Especial Arena - ExpoAgro Dourados 2026',
+            type: 'Receita',
+            category: 'Receita Comercial',
+            amount: 45000.00,
+            status: 'Pendente',
+            paymentMethod: 'Boleto Bancário',
+            entity: 'ExpoAgro Dourados 2026'
+        },
+        {
+            id: 't5',
+            date: '2026-08-05',
+            description: 'Folha de Pagamento - Carlos Eduardo Oliveira',
+            type: 'Despesa',
+            category: 'Folha de Pagamento',
+            amount: 6800.00,
+            status: 'Pago',
+            paymentMethod: 'Depósito em Conta',
+            entity: 'Carlos Eduardo Oliveira'
+        },
+        {
+            id: 't6',
+            date: '2026-08-05',
+            description: 'Folha de Pagamento - Mariana Alves Prado',
+            type: 'Despesa',
+            category: 'Folha de Pagamento',
+            amount: 8500.00,
+            status: 'Pago',
+            paymentMethod: 'Depósito em Conta',
+            entity: 'Mariana Alves Prado'
+        },
+        {
+            id: 't7',
+            date: '2026-08-05',
+            description: 'Folha de Pagamento - Roberto Santos Silva',
+            type: 'Despesa',
+            category: 'Folha de Pagamento',
+            amount: 5400.00,
+            status: 'Pago',
+            paymentMethod: 'Depósito em Conta',
+            entity: 'Roberto Santos Silva'
+        },
+        {
+            id: 't8',
+            date: '2026-08-05',
+            description: 'Folha de Pagamento - Fernanda Lima Castro',
+            type: 'Despesa',
+            category: 'Folha de Pagamento',
+            amount: 4900.00,
+            status: 'Pago',
+            paymentMethod: 'Depósito em Conta',
+            entity: 'Fernanda Lima Castro'
+        },
+        {
+            id: 't9',
+            date: '2026-08-05',
+            description: 'Folha de Pagamento - Lucas Mendes Rocha',
+            type: 'Despesa',
+            category: 'Folha de Pagamento',
+            amount: 3800.00,
+            status: 'Pago',
+            paymentMethod: 'Depósito em Conta',
+            entity: 'Lucas Mendes Rocha'
+        },
+        {
+            id: 't10',
+            date: '2026-08-05',
+            description: 'Folha de Pagamento - Juliana Prado Ribeiro',
+            type: 'Despesa',
+            category: 'Folha de Pagamento',
+            amount: 5600.00,
+            status: 'Pago',
+            paymentMethod: 'Depósito em Conta',
+            entity: 'Juliana Prado Ribeiro'
+        },
+        {
+            id: 't11',
+            date: '2026-08-10',
+            description: 'Energia Elétrica Parque Transmissor FM (Energisa)',
+            type: 'Despesa',
+            category: 'Energia & Transmissor',
+            amount: 14200.00,
+            status: 'Pago',
+            paymentMethod: 'Débito Automático',
+            entity: 'Energisa MS'
+        },
+        {
+            id: 't12',
+            date: '2026-08-18',
+            description: 'Licença Direitos Autorais Execução Musical (ECAD)',
+            type: 'Despesa',
+            category: 'Impostos & Licenças',
+            amount: 4200.00,
+            status: 'Pago',
+            paymentMethod: 'Boleto Bancário',
+            entity: 'ECAD Nacional'
+        },
+        {
+            id: 't13',
+            date: '2026-08-20',
+            description: 'Taxa FISTEL / outorga Anatel 94.5 FM',
+            type: 'Despesa',
+            category: 'Impostos & Licenças',
+            amount: 2850.00,
+            status: 'Pago',
+            paymentMethod: 'GRU Anatel',
+            entity: 'Anatel Minist. Comunicações'
+        },
+        {
+            id: 't14',
+            date: '2026-08-25',
+            description: 'Manutenção Preventiva Módulo Potência Transmissor',
+            type: 'Despesa',
+            category: 'Manutenção Técnica',
+            amount: 3500.00,
+            status: 'Pendente',
+            paymentMethod: 'Boleto Bancário',
+            entity: 'Telecom Engenharia'
+        },
+        {
+            id: 't15',
+            date: '2026-08-28',
+            description: 'Comissões Vendas Comerciais - Mariana Alves (Ref. Jul/Ago)',
+            type: 'Despesa',
+            category: 'Comissões Vendas',
+            amount: 5030.00,
+            status: 'Pendente',
+            paymentMethod: 'Transferência Bancária',
+            entity: 'Mariana Alves Prado'
+        }
+    ];
+
+    async function getTransactions() {
+        const apiData = await apiFetch('/financial/transactions');
+        if (apiData) {
+            localStorage.setItem('gfm_transactions', JSON.stringify(apiData));
+            return apiData;
+        }
+        return JSON.parse(localStorage.getItem('gfm_transactions')) || INITIAL_TRANSACTIONS;
+    }
+
+    async function saveTransaction(tx) {
+        if (tx.id && !tx.id.startsWith('temp_') && !tx.id.startsWith('t_sync_')) {
+            const apiRes = await apiFetch(`/financial/transactions/${tx.id}`, 'PUT', tx);
+            if (apiRes) return apiRes;
         } else {
-            radioPlayIcon.classList.remove('hidden');
-            radioPauseIcon.classList.add('hidden');
-            audioWavesIcon.classList.remove('playing');
+            const apiRes = await apiFetch('/financial/transactions', 'POST', tx);
+            if (apiRes) return apiRes;
+        }
+        let list = await getTransactions();
+        if (tx.id) {
+            const idx = list.findIndex(t => t.id === tx.id);
+            if (idx !== -1) list[idx] = { ...list[idx], ...tx };
+            else list.unshift(tx);
+        } else {
+            tx.id = 't' + Date.now();
+            list.unshift(tx);
+        }
+        localStorage.setItem('gfm_transactions', JSON.stringify(list));
+        return tx;
+    }
+
+    async function deleteTransactionApi(id) {
+        const apiRes = await apiFetch(`/financial/transactions/${id}`, 'DELETE');
+        if (apiRes) return true;
+        let list = await getTransactions();
+        list = list.filter(t => t.id !== id);
+        localStorage.setItem('gfm_transactions', JSON.stringify(list));
+        return true;
+    }
+
+    // Subtabs Navigation
+    const finSubtabs = document.querySelectorAll('.fin-subtab');
+    const finTabContents = document.querySelectorAll('.fin-tab-content');
+
+    finSubtabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTab = tab.getAttribute('data-fin-tab');
+
+            finSubtabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            finTabContents.forEach(content => content.classList.add('hidden'));
+
+            if (targetTab === 'cashflow') {
+                const view = document.getElementById('finCashflowView');
+                if (view) view.classList.remove('hidden');
+                renderTransactionsTable();
+            } else if (targetTab === 'dre') {
+                const view = document.getElementById('finDreView');
+                if (view) view.classList.remove('hidden');
+                renderDRETable();
+            } else if (targetTab === 'commissions') {
+                const view = document.getElementById('finCommissionsView');
+                if (view) view.classList.remove('hidden');
+                renderCommissionsTable();
+            } else if (targetTab === 'charts') {
+                const view = document.getElementById('finChartsView');
+                if (view) view.classList.remove('hidden');
+                renderFinancialCharts();
+            }
+
+            refreshIcons();
+        });
+    });
+
+    // Main loader for Financial Overview
+    async function loadFinancialOverview() {
+        const txs = await getTransactions();
+        const clients = await getClients();
+
+        const totalIncome = txs
+            .filter(t => t.type === 'Receita')
+            .reduce((acc, t) => acc + parseFloat(t.amount || 0), 0);
+
+        const totalExpense = txs
+            .filter(t => t.type === 'Despesa')
+            .reduce((acc, t) => acc + parseFloat(t.amount || 0), 0);
+
+        const netResult = totalIncome - totalExpense;
+        const marginPct = totalIncome > 0 ? ((netResult / totalIncome) * 100).toFixed(1) : 0;
+
+        let totalCommissions = 0;
+        clients.forEach(c => {
+            if (c.status === 'Ativo') {
+                const val = parseFloat(c.value || 0);
+                if (c.executives && Array.isArray(c.executives) && c.executives.length > 0) {
+                    c.executives.forEach(e => {
+                        totalCommissions += val * (parseFloat(e.commission || 0) / 100);
+                    });
+                } else if (c.executive) {
+                    totalCommissions += val * (parseFloat(c.commission || 10) / 100);
+                }
+            }
+        });
+
+        const elIncome = document.getElementById('finKpiIncome');
+        const elExpense = document.getElementById('finKpiExpense');
+        const elNet = document.getElementById('finKpiNet');
+        const elNetMargin = document.getElementById('finKpiNetMargin');
+        const elComm = document.getElementById('finKpiCommission');
+
+        if (elIncome) elIncome.textContent = formatCurrency(totalIncome);
+        if (elExpense) elExpense.textContent = formatCurrency(totalExpense);
+        
+        if (elNet) {
+            elNet.textContent = formatCurrency(netResult);
+            if (netResult >= 0) elNet.className = 'kpi-value positive-text';
+            else elNet.className = 'kpi-value negative-text';
+        }
+
+        if (elNetMargin) elNetMargin.textContent = `Margem EBITDA: ${marginPct}%`;
+        if (elComm) elComm.textContent = formatCurrency(totalCommissions);
+
+        const activeSubtab = document.querySelector('.fin-subtab.active');
+        const currentTab = activeSubtab ? activeSubtab.getAttribute('data-fin-tab') : 'cashflow';
+
+        if (currentTab === 'cashflow') renderTransactionsTable();
+        else if (currentTab === 'dre') renderDRETable();
+        else if (currentTab === 'commissions') renderCommissionsTable();
+        else if (currentTab === 'charts') renderFinancialCharts();
+    }
+
+    // Render Transactions Table (Cashflow)
+    async function renderTransactionsTable() {
+        const txs = await getTransactions();
+        const tbody = document.getElementById('financialTableBody');
+        const emptyState = document.getElementById('emptyFinState');
+        if (!tbody) return;
+
+        const searchVal = (document.getElementById('txSearchInput')?.value || '').toLowerCase().trim();
+        const typeVal = document.getElementById('txTypeFilter')?.value || 'ALL';
+        const statusVal = document.getElementById('txStatusFilter')?.value || 'ALL';
+        const categoryVal = document.getElementById('txCategoryFilter')?.value || 'ALL';
+
+        let filtered = txs.filter(t => {
+            const matchesSearch = !searchVal || 
+                (t.description && t.description.toLowerCase().includes(searchVal)) ||
+                (t.entity && t.entity.toLowerCase().includes(searchVal)) ||
+                (t.category && t.category.toLowerCase().includes(searchVal));
+
+            const matchesType = (typeVal === 'ALL') || (t.type === typeVal);
+            const matchesStatus = (statusVal === 'ALL') || (t.status === statusVal);
+            const matchesCategory = (categoryVal === 'ALL') || (t.category === categoryVal);
+
+            return matchesSearch && matchesType && matchesStatus && matchesCategory;
+        });
+
+        tbody.innerHTML = '';
+
+        if (filtered.length === 0) {
+            if (emptyState) emptyState.classList.remove('hidden');
+            return;
+        }
+
+        if (emptyState) emptyState.classList.add('hidden');
+
+        filtered.forEach(t => {
+            const tr = document.createElement('tr');
+
+            const isIncome = t.type === 'Receita';
+            const typeBadge = isIncome
+                ? `<span class="tx-type-pill type-income"><i data-lucide="arrow-up-right"></i> Entrada</span>`
+                : `<span class="tx-type-pill type-expense"><i data-lucide="arrow-down-right"></i> Saída</span>`;
+
+            let statusClass = 'status-pending';
+            if (t.status === 'Pago') statusClass = 'status-paid';
+            else if (t.status === 'Atrasado') statusClass = 'status-overdue';
+
+            const amountClass = isIncome ? 'tx-amount income' : 'tx-amount expense';
+            const sign = isIncome ? '+ ' : '- ';
+
+            const payActionBtn = t.status !== 'Pago'
+                ? `<button class="action-btn-sm pay-btn btn-quick-pay" data-id="${t.id}" title="Marcar como Pago/Quitado"><i data-lucide="check"></i> Quitar</button>`
+                : '';
+
+            tr.innerHTML = `
+                <td><strong>${formatDate(t.date)}</strong></td>
+                <td>
+                    <div class="collab-name-box">
+                        <span class="collab-title">${t.description}</span>
+                    </div>
+                </td>
+                <td><span class="badge-tag">${t.category || 'Geral'}</span></td>
+                <td>${t.entity || '-'}</td>
+                <td><small style="color: var(--text-muted);">${t.paymentMethod || 'PIX'}</small></td>
+                <td>${typeBadge}</td>
+                <td><span class="${amountClass}">${sign}${formatCurrency(t.amount)}</span></td>
+                <td><span class="status-pill ${statusClass}">${t.status}</span></td>
+                <td class="text-right">
+                    <div class="action-buttons">
+                        ${payActionBtn}
+                        <button class="icon-btn edit-btn btn-edit-tx" data-id="${t.id}" title="Editar Lançamento">
+                            <i data-lucide="edit-3"></i>
+                        </button>
+                        <button class="icon-btn delete-btn btn-delete-tx" data-id="${t.id}" title="Excluir Lançamento">
+                            <i data-lucide="trash-2"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+
+        // Wire Quick Pay Buttons
+        document.querySelectorAll('.btn-quick-pay').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                const list = await getTransactions();
+                const target = list.find(t => t.id === id);
+                if (target) {
+                    target.status = 'Pago';
+                    await saveTransaction(target);
+                    showToast('Lançamento quitado com sucesso no Caixa GFM!', 'success');
+                    loadFinancialOverview();
+                }
+            });
+        });
+
+        // Wire Edit Buttons
+        document.querySelectorAll('.btn-edit-tx').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                openTransactionModal(id);
+            });
+        });
+
+        // Wire Delete Buttons
+        document.querySelectorAll('.btn-delete-tx').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                if (confirm('Tem certeza que deseja excluir este lançamento financeiro?')) {
+                    await deleteTransactionApi(id);
+                    showToast('Lançamento financeiro removido com sucesso.', 'info');
+                    loadFinancialOverview();
+                }
+            });
+        });
+
+        refreshIcons();
+    }
+
+    // Render DRE Table
+    async function renderDRETable() {
+        const txs = await getTransactions();
+        const tbody = document.getElementById('dreTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const grossIncome = txs.filter(t => t.type === 'Receita').reduce((a, b) => a + parseFloat(b.amount || 0), 0);
+        const ecadAnatelTax = txs.filter(t => t.type === 'Despesa' && t.category === 'Impostos & Licenças').reduce((a, b) => a + parseFloat(b.amount || 0), 0);
+        const netIncome = grossIncome - ecadAnatelTax;
+
+        const transmitterCosts = txs.filter(t => t.type === 'Despesa' && (t.category === 'Energia & Transmissor' || t.category === 'Manutenção Técnica')).reduce((a, b) => a + parseFloat(b.amount || 0), 0);
+        const grossProfit = netIncome - transmitterCosts;
+
+        const payrollExpenses = txs.filter(t => t.type === 'Despesa' && t.category === 'Folha de Pagamento').reduce((a, b) => a + parseFloat(b.amount || 0), 0);
+        const commercialCommissions = txs.filter(t => t.type === 'Despesa' && t.category === 'Comissões Vendas').reduce((a, b) => a + parseFloat(b.amount || 0), 0);
+        const adminOtherExpenses = txs.filter(t => t.type === 'Despesa' && t.category === 'Outros').reduce((a, b) => a + parseFloat(b.amount || 0), 0);
+
+        const totalOperatingExpenses = payrollExpenses + commercialCommissions + adminOtherExpenses;
+        const ebitdaResult = grossProfit - totalOperatingExpenses;
+
+        function calcPct(val) {
+            if (!grossIncome || grossIncome === 0) return '0.0%';
+            return ((val / grossIncome) * 100).toFixed(1) + '%';
+        }
+
+        const rows = [
+            { title: '1. RECEITA BRUTA DE VENDAS & PATROCÍNIOS', val: grossIncome, pct: '100.0%', class: 'dre-section-header' },
+            { title: '   (+) Contratos de Patrocínio Comercial (FM)', val: grossIncome, pct: '100.0%', class: 'dre-row-sub' },
+            
+            { title: '2. (-) DEDUÇÕES E TAXAS REGULATÓRIAS', val: ecadAnatelTax, pct: calcPct(ecadAnatelTax), class: 'dre-section-header' },
+            { title: '   (-) Direitos Autorais ECAD & Outorga Anatel/Fistel', val: ecadAnatelTax, pct: calcPct(ecadAnatelTax), class: 'dre-row-sub' },
+
+            { title: '3. (=) RECEITA LÍQUIDA OPERACIONAL', val: netIncome, pct: calcPct(netIncome), class: 'dre-row-total' },
+
+            { title: '4. (-) CUSTOS OPERACIONAIS DE TRANSMISSÃO', val: transmitterCosts, pct: calcPct(transmitterCosts), class: 'dre-section-header' },
+            { title: '   (-) Energia Elétrica Parque Transmissor & Manutenção', val: transmitterCosts, pct: calcPct(transmitterCosts), class: 'dre-row-sub' },
+
+            { title: '5. (=) LUCRO BRUTO OPERACIONAL', val: grossProfit, pct: calcPct(grossProfit), class: 'dre-row-total' },
+
+            { title: '6. (-) DESPESAS COM PESSOAL & FOLHA', val: payrollExpenses, pct: calcPct(payrollExpenses), class: 'dre-section-header' },
+            { title: '   (-) Salários Equipe de Rádio & Produção', val: payrollExpenses, pct: calcPct(payrollExpenses), class: 'dre-row-sub' },
+
+            { title: '7. (-) DESPESAS COMERCIAIS & COMISSÕES', val: commercialCommissions, pct: calcPct(commercialCommissions), class: 'dre-section-header' },
+            { title: '   (-) Comissões dos Executivos de Vendas', val: commercialCommissions, pct: calcPct(commercialCommissions), class: 'dre-row-sub' },
+
+            { title: '8. (-) DESPESAS ADMINISTRATIVAS & MANUTENÇÃO', val: adminOtherExpenses, pct: calcPct(adminOtherExpenses), class: 'dre-section-header' },
+            { title: '   (-) Outros Custos Gerais da Emissora', val: adminOtherExpenses, pct: calcPct(adminOtherExpenses), class: 'dre-row-sub' },
+
+            { 
+                title: '9. (=) RESULTADO OPERACIONAL LÍQUIDO (EBITDA)', 
+                val: ebitdaResult, 
+                pct: calcPct(ebitdaResult), 
+                class: `dre-row-total ${ebitdaResult >= 0 ? 'dre-row-result-positive' : 'dre-row-result-negative'}` 
+            }
+        ];
+
+        rows.forEach(r => {
+            const tr = document.createElement('tr');
+            tr.className = r.class;
+            tr.innerHTML = `
+                <td><strong>${r.title}</strong></td>
+                <td class="text-right"><strong>${formatCurrency(r.val)}</strong></td>
+                <td class="text-right"><small>${r.pct}</small></td>
+                <td><span class="badge-tag">${r.val >= 0 ? 'Positivo' : 'Negativo'}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Render Commissions Table
+    async function renderCommissionsTable() {
+        const clients = await getClients();
+        const collabs = await getCollaborators();
+        const tbody = document.getElementById('commissionsTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const execMap = {};
+
+        clients.forEach(client => {
+            if (client.status === 'Ativo') {
+                const clientVal = parseFloat(client.value || 0);
+                if (client.executives && Array.isArray(client.executives) && client.executives.length > 0) {
+                    client.executives.forEach(item => {
+                        const code = item.executive;
+                        const commRate = parseFloat(item.commission || 0);
+                        const commVal = clientVal * (commRate / 100);
+
+                        if (!execMap[code]) {
+                            const collab = collabs.find(c => String(c.code).padStart(2, '0') === String(code).padStart(2, '0'));
+                            execMap[code] = {
+                                code: code,
+                                name: collab ? collab.name : `Executivo ${code}`,
+                                contracts: 0,
+                                totalRevenue: 0,
+                                totalCommission: 0,
+                                rates: []
+                            };
+                        }
+                        execMap[code].contracts += 1;
+                        execMap[code].totalRevenue += clientVal;
+                        execMap[code].totalCommission += commVal;
+                        execMap[code].rates.push(commRate);
+                    });
+                } else if (client.executive) {
+                    const code = client.executive;
+                    const commRate = parseFloat(client.commission || 10);
+                    const commVal = clientVal * (commRate / 100);
+
+                    if (!execMap[code]) {
+                        const collab = collabs.find(c => String(c.code).padStart(2, '0') === String(code).padStart(2, '0'));
+                        execMap[code] = {
+                            code: code,
+                            name: collab ? collab.name : `Executivo ${code}`,
+                            contracts: 0,
+                            totalRevenue: 0,
+                            totalCommission: 0,
+                            rates: []
+                        };
+                    }
+                    execMap[code].contracts += 1;
+                    execMap[code].totalRevenue += clientVal;
+                    execMap[code].totalCommission += commVal;
+                    execMap[code].rates.push(commRate);
+                }
+            }
+        });
+
+        const execList = Object.values(execMap);
+        if (execList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 2rem;">Nenhum executivo comercial com contratos ativos no momento.</td></tr>`;
+            return;
+        }
+
+        execList.forEach(exec => {
+            const avgRate = exec.rates.length > 0
+                ? (exec.rates.reduce((a, b) => a + b, 0) / exec.rates.length).toFixed(1) + '%'
+                : '10.0%';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${String(exec.code).padStart(2, '0')}</strong></td>
+                <td>
+                    <div class="collab-name-box">
+                        <span class="collab-title">${exec.name}</span>
+                    </div>
+                </td>
+                <td><span class="badge-tag">${exec.contracts} Contratos</span></td>
+                <td class="text-right"><strong>${formatCurrency(exec.totalRevenue)}</strong></td>
+                <td class="text-right"><small>${avgRate}</small></td>
+                <td class="text-right"><span class="tx-amount income">${formatCurrency(exec.totalCommission)}</span></td>
+                <td class="text-center"><span class="status-pill status-pending">Calculado (A Pagar)</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        refreshIcons();
+    }
+
+    // Render Financial Charts & Metrics
+    async function renderFinancialCharts() {
+        const txs = await getTransactions();
+        const catContainer = document.getElementById('finCategoryBreakdown');
+        if (!catContainer) return;
+        catContainer.innerHTML = '';
+
+        const expenses = txs.filter(t => t.type === 'Despesa');
+        const totalExpenses = expenses.reduce((a, b) => a + parseFloat(b.amount || 0), 0);
+
+        const categories = {};
+        expenses.forEach(t => {
+            const cat = t.category || 'Outros';
+            categories[cat] = (categories[cat] || 0) + parseFloat(t.amount || 0);
+        });
+
+        Object.keys(categories).forEach(cat => {
+            const amount = categories[cat];
+            const pct = totalExpenses > 0 ? Math.round((amount / totalExpenses) * 100) : 0;
+
+            const item = document.createElement('div');
+            item.className = 'cat-breakdown-item';
+            item.innerHTML = `
+                <div class="cat-breakdown-meta">
+                    <span class="cat-breakdown-name">${cat}</span>
+                    <span class="cat-breakdown-val">${formatCurrency(amount)} (${pct}%)</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill blue" style="width: ${pct}%"></div>
+                </div>
+            `;
+            catContainer.appendChild(item);
+        });
+
+        const grossIncome = txs.filter(t => t.type === 'Receita').reduce((a, b) => a + parseFloat(b.amount || 0), 0);
+        const paidIncome = txs.filter(t => t.type === 'Receita' && t.status === 'Pago').reduce((a, b) => a + parseFloat(b.amount || 0), 0);
+        const payroll = txs.filter(t => t.type === 'Despesa' && t.category === 'Folha de Pagamento').reduce((a, b) => a + parseFloat(b.amount || 0), 0);
+        const transmitter = txs.filter(t => t.type === 'Despesa' && (t.category === 'Energia & Transmissor' || t.category === 'Manutenção Técnica')).reduce((a, b) => a + parseFloat(b.amount || 0), 0);
+        const netResult = grossIncome - totalExpenses;
+
+        const ebitdaMargin = grossIncome > 0 ? Math.min(Math.max(Math.round((netResult / grossIncome) * 100), 0), 100) : 0;
+        const payrollRatio = grossIncome > 0 ? Math.min(Math.round((payroll / grossIncome) * 100), 100) : 0;
+        const transmitterRatio = grossIncome > 0 ? Math.min(Math.round((transmitter / grossIncome) * 100), 100) : 0;
+        const adimplenceRatio = grossIncome > 0 ? Math.min(Math.round((paidIncome / grossIncome) * 100), 100) : 0;
+
+        const elEbitdaVal = document.getElementById('healthEbitdaMargim');
+        const elEbitdaBar = document.getElementById('healthEbitdaBar');
+        if (elEbitdaVal) elEbitdaVal.textContent = `${ebitdaMargin}%`;
+        if (elEbitdaBar) elEbitdaBar.style.width = `${ebitdaMargin}%`;
+
+        const elPayrollVal = document.getElementById('healthPayrollRatio');
+        const elPayrollBar = document.getElementById('healthPayrollBar');
+        if (elPayrollVal) elPayrollVal.textContent = `${payrollRatio}%`;
+        if (elPayrollBar) elPayrollBar.style.width = `${payrollRatio}%`;
+
+        const elTransVal = document.getElementById('healthTransmitterRatio');
+        const elTransBar = document.getElementById('healthTransmitterBar');
+        if (elTransVal) elTransVal.textContent = `${transmitterRatio}%`;
+        if (elTransBar) elTransBar.style.width = `${transmitterRatio}%`;
+
+        const elAdimpVal = document.getElementById('healthAdimplenceRatio');
+        const elAdimpBar = document.getElementById('healthAdimplenceBar');
+        if (elAdimpVal) elAdimpVal.textContent = `${adimplenceRatio}%`;
+        if (elAdimpBar) elAdimpBar.style.width = `${adimplenceRatio}%`;
+    }
+
+    // Modal Transaction Controls
+    const transactionModal = document.getElementById('transactionModal');
+    const transactionForm = document.getElementById('transactionForm');
+    const btnNewTransaction = document.getElementById('btnNewTransaction');
+    const closeTransactionModalBtn = document.getElementById('closeTransactionModalBtn');
+    const cancelTransactionBtn = document.getElementById('cancelTransactionBtn');
+
+    const btnNewIncome = document.getElementById('btnNewIncome');
+    const btnNewExpense = document.getElementById('btnNewExpense');
+
+    function openTransactionModal(id = null, presetType = null) {
+        if (!transactionForm || !transactionModal) return;
+        transactionForm.reset();
+        document.getElementById('txId').value = '';
+
+        const iconBox = document.getElementById('txModalIcon');
+
+        if (id) {
+            const titleEl = document.getElementById('txModalTitle');
+            if (titleEl) titleEl.textContent = 'Editar Transação Financeira';
+            getTransactions().then(list => {
+                const target = list.find(t => t.id === id);
+                if (target) {
+                    document.getElementById('txId').value = target.id;
+                    document.getElementById('txType').value = target.type || 'Receita';
+                    document.getElementById('txAmount').value = target.amount || '';
+                    document.getElementById('txDescription').value = target.description || '';
+                    document.getElementById('txCategory').value = target.category || 'Receita Comercial';
+                    document.getElementById('txDate').value = target.date || '';
+                    document.getElementById('txEntity').value = target.entity || '';
+                    document.getElementById('txPaymentMethod').value = target.paymentMethod || 'PIX / Transferência';
+                    document.getElementById('txStatus').value = target.status || 'Pago';
+
+                    if (target.type === 'Receita') {
+                        if (iconBox) iconBox.className = 'modal-icon green';
+                    } else {
+                        if (iconBox) iconBox.className = 'modal-icon red';
+                    }
+                }
+            });
+        } else {
+            const titleEl = document.getElementById('txModalTitle');
+            document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+
+            if (presetType === 'Receita') {
+                if (titleEl) titleEl.textContent = '+ Cadastrar Nova Entrada (Receita)';
+                document.getElementById('txType').value = 'Receita';
+                document.getElementById('txCategory').value = 'Receita Comercial';
+                if (iconBox) iconBox.className = 'modal-icon green';
+            } else if (presetType === 'Despesa') {
+                if (titleEl) titleEl.textContent = '- Cadastrar Nova Saída (Despesa)';
+                document.getElementById('txType').value = 'Despesa';
+                document.getElementById('txCategory').value = 'Folha de Pagamento';
+                if (iconBox) iconBox.className = 'modal-icon red';
+            } else {
+                if (titleEl) titleEl.textContent = 'Nova Transação Financeira';
+                if (iconBox) iconBox.className = 'modal-icon green';
+            }
+        }
+
+        transactionModal.classList.remove('hidden');
+        refreshIcons();
+    }
+
+    function closeTransactionModal() {
+        if (transactionModal) transactionModal.classList.add('hidden');
+    }
+
+    if (btnNewIncome) btnNewIncome.addEventListener('click', () => openTransactionModal(null, 'Receita'));
+    if (btnNewExpense) btnNewExpense.addEventListener('click', () => openTransactionModal(null, 'Despesa'));
+    if (btnNewTransaction) btnNewTransaction.addEventListener('click', () => openTransactionModal());
+    if (closeTransactionModalBtn) closeTransactionModalBtn.addEventListener('click', closeTransactionModal);
+    if (cancelTransactionBtn) cancelTransactionBtn.addEventListener('click', closeTransactionModal);
+
+    if (transactionForm) {
+        transactionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const tx = {
+                id: document.getElementById('txId').value,
+                type: document.getElementById('txType').value,
+                amount: parseFloat(document.getElementById('txAmount').value) || 0,
+                description: document.getElementById('txDescription').value.trim(),
+                category: document.getElementById('txCategory').value,
+                date: document.getElementById('txDate').value,
+                entity: document.getElementById('txEntity').value.trim(),
+                paymentMethod: document.getElementById('txPaymentMethod').value,
+                status: document.getElementById('txStatus').value
+            };
+
+            if (!tx.description || !tx.amount || !tx.date) {
+                showToast('Preencha os campos obrigatórios.', 'error');
+                return;
+            }
+
+            await saveTransaction(tx);
+            closeTransactionModal();
+            showToast('Transação financeira salva com sucesso!', 'success');
+            loadFinancialOverview();
+        });
+    }
+
+    ['txSearchInput', 'txTypeFilter', 'txStatusFilter', 'txCategoryFilter'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', renderTransactionsTable);
+            el.addEventListener('change', renderTransactionsTable);
         }
     });
+
+    const btnSyncContracts = document.getElementById('btnSyncContracts');
+    if (btnSyncContracts) {
+        btnSyncContracts.addEventListener('click', async () => {
+            const clients = await getClients();
+            const collabs = await getCollaborators();
+            const txs = await getTransactions();
+
+            let addedCount = 0;
+            const today = new Date().toISOString().split('T')[0];
+
+            clients.forEach(c => {
+                if (c.status === 'Ativo') {
+                    const exists = txs.some(t => t.entity === c.name && t.type === 'Receita');
+                    if (!exists) {
+                        txs.unshift({
+                            id: 't_sync_' + Date.now() + Math.random().toString(36).substring(2, 5),
+                            date: today,
+                            description: `Faturamento Mensal Contrato - ${c.name}`,
+                            type: 'Receita',
+                            category: 'Receita Comercial',
+                            amount: parseFloat(c.value || 0),
+                            status: 'Pendente',
+                            paymentMethod: 'Boleto Bancário',
+                            entity: c.name
+                        });
+                        addedCount++;
+                    }
+                }
+            });
+
+            collabs.forEach(c => {
+                if (c.status === 'Ativo') {
+                    const exists = txs.some(t => t.entity === c.name && t.category === 'Folha de Pagamento');
+                    if (!exists) {
+                        txs.unshift({
+                            id: 't_sync_' + Date.now() + Math.random().toString(36).substring(2, 5),
+                            date: today,
+                            description: `Folha de Pagamento Ref. Mês - ${c.name}`,
+                            type: 'Despesa',
+                            category: 'Folha de Pagamento',
+                            amount: parseFloat(c.salary || 0),
+                            status: 'Pendente',
+                            paymentMethod: 'Depósito em Conta',
+                            entity: c.name
+                        });
+                        addedCount++;
+                    }
+                }
+            });
+
+            localStorage.setItem('gfm_transactions', JSON.stringify(txs));
+            if (addedCount > 0) {
+                showToast(`${addedCount} novos lançamentos gerados a partir de Contratos e Folha!`, 'success');
+            } else {
+                showToast('Todos os contratos e salários já estão sincronizados no fluxo financeiro.', 'info');
+            }
+            loadFinancialOverview();
+        });
+    }
+
+    const btnExportCsv = document.getElementById('btnExportCsv');
+    if (btnExportCsv) {
+        btnExportCsv.addEventListener('click', async () => {
+            const txs = await getTransactions();
+
+            let csv = 'Data Vencimento;Descrição;Categoria;Entidade;Forma Pagamento;Tipo;Valor (R$);Status\n';
+            txs.forEach(t => {
+                csv += `"${t.date}";"${t.description}";"${t.category}";"${t.entity}";"${t.paymentMethod}";"${t.type}";"${t.amount.toFixed(2)}";"${t.status}"\n`;
+            });
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Fluxo_de_Caixa_GrandeFM_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('Relatório de Fluxo de Caixa exportado em CSV com sucesso!', 'success');
+        });
+    }
 
     // --------------------------------------------------------------------------
     // 13. Canvas Background Radio Waves
@@ -1405,4 +2250,286 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(drawWaves);
     }
     drawWaves();
+
+    // --------------------------------------------------------------------------
+    // 15. Módulo de Configurações do Sistema GFM
+    // --------------------------------------------------------------------------
+    let currentSystemUsers = [];
+
+    // Sub-Tabs Navigation for Configurações
+    const cfgSubtabs = document.querySelectorAll('.cfg-subtab');
+    const cfgTabContents = document.querySelectorAll('.cfg-tab-content');
+
+    cfgSubtabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTab = tab.getAttribute('data-cfg-tab');
+
+            cfgSubtabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            cfgTabContents.forEach(content => content.classList.add('hidden'));
+
+            if (targetTab === 'profile') document.getElementById('cfgProfileView')?.classList.remove('hidden');
+            if (targetTab === 'users') document.getElementById('cfgUsersView')?.classList.remove('hidden');
+            if (targetTab === 'backup') document.getElementById('cfgBackupView')?.classList.remove('hidden');
+            if (targetTab === 'security') document.getElementById('cfgSecurityView')?.classList.remove('hidden');
+            if (targetTab === 'preferences') document.getElementById('cfgPreferencesView')?.classList.remove('hidden');
+
+            refreshIcons();
+        });
+    });
+
+    // Load Settings Overview
+    async function loadSettingsOverview() {
+        try {
+            const [settingsData, usersData, collabs, clients, txs] = await Promise.all([
+                apiFetch('/settings'),
+                apiFetch('/settings/users'),
+                apiFetch('/collaborators'),
+                apiFetch('/clients'),
+                apiFetch('/financial/transactions')
+            ]);
+
+            // Populate Company Profile Form
+            if (settingsData) {
+                if (document.getElementById('cfgCompanyName')) document.getElementById('cfgCompanyName').value = settingsData.companyName || '';
+                if (document.getElementById('cfgTradeName')) document.getElementById('cfgTradeName').value = settingsData.tradeName || '';
+                if (document.getElementById('cfgCnpj')) document.getElementById('cfgCnpj').value = settingsData.cnpj || '';
+                if (document.getElementById('cfgFrequency')) document.getElementById('cfgFrequency').value = settingsData.frequency || '';
+                if (document.getElementById('cfgPower')) document.getElementById('cfgPower').value = settingsData.power || '';
+                if (document.getElementById('cfgCityState')) document.getElementById('cfgCityState').value = `${settingsData.city || ''} - ${settingsData.state || ''}`.trim();
+                if (document.getElementById('cfgAddress')) document.getElementById('cfgAddress').value = settingsData.address || '';
+                if (document.getElementById('cfgEmail')) document.getElementById('cfgEmail').value = settingsData.email || '';
+                if (document.getElementById('cfgPhone')) document.getElementById('cfgPhone').value = settingsData.phone || '';
+                if (document.getElementById('cfgPixKey')) document.getElementById('cfgPixKey').value = settingsData.pixKey || '';
+                if (document.getElementById('cfgPixKeyType')) document.getElementById('cfgPixKeyType').value = settingsData.pixKeyType || 'CNPJ';
+                if (document.getElementById('cfgBankName')) document.getElementById('cfgBankName').value = settingsData.bankName || '';
+                if (document.getElementById('cfgAgency')) document.getElementById('cfgAgency').value = settingsData.agency || '';
+                if (document.getElementById('cfgAccount')) document.getElementById('cfgAccount').value = settingsData.account || '';
+
+                // Preferences
+                if (document.getElementById('cfgDefaultCommission')) document.getElementById('cfgDefaultCommission').value = settingsData.defaultCommission || 10.0;
+                if (document.getElementById('cfgInvoiceDueDay')) document.getElementById('cfgInvoiceDueDay').value = settingsData.invoiceDueDay || 10;
+                if (document.getElementById('cfgEstimatedTaxRate')) document.getElementById('cfgEstimatedTaxRate').value = settingsData.estimatedTaxRate || 5.0;
+                if (document.getElementById('cfgSessionTimeout')) document.getElementById('cfgSessionTimeout').value = settingsData.sessionTimeout || '30m';
+            }
+
+            // System Users Table
+            currentSystemUsers = usersData || [];
+            renderSystemUsersTable(currentSystemUsers);
+
+            // Backup Statistics
+            const totalRecords = (collabs ? collabs.length : 0) + (clients ? clients.length : 0) + (txs ? txs.length : 0);
+            const totalRecordsEl = document.getElementById('cfgDbTotalRecords');
+            if (totalRecordsEl) {
+                totalRecordsEl.textContent = `${totalRecords} Registros`;
+            }
+
+            refreshIcons();
+        } catch (error) {
+            console.error('Erro ao carregar configurações:', error);
+        }
+    }
+
+    // Save Company Profile Form
+    const companyProfileForm = document.getElementById('companyProfileForm');
+    if (companyProfileForm) {
+        companyProfileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const cityStateParts = (document.getElementById('cfgCityState').value || '').split('-');
+            const updatedProfile = {
+                companyName: document.getElementById('cfgCompanyName').value,
+                tradeName: document.getElementById('cfgTradeName').value,
+                cnpj: document.getElementById('cfgCnpj').value,
+                frequency: document.getElementById('cfgFrequency').value,
+                power: document.getElementById('cfgPower').value,
+                city: cityStateParts[0] ? cityStateParts[0].trim() : 'Dourados',
+                state: cityStateParts[1] ? cityStateParts[1].trim() : 'MS',
+                address: document.getElementById('cfgAddress').value,
+                email: document.getElementById('cfgEmail').value,
+                phone: document.getElementById('cfgPhone').value,
+                pixKey: document.getElementById('cfgPixKey').value,
+                pixKeyType: document.getElementById('cfgPixKeyType').value,
+                bankName: document.getElementById('cfgBankName').value,
+                agency: document.getElementById('cfgAgency').value,
+                account: document.getElementById('cfgAccount').value
+            };
+
+            const res = await apiFetch('/settings', {
+                method: 'PUT',
+                body: JSON.stringify(updatedProfile)
+            });
+
+            if (res) {
+                showToast('Dados da emissora e conta bancária salvos com sucesso!', 'success');
+            } else {
+                showToast('Parâmetros salvos localmente.', 'info');
+            }
+        });
+    }
+
+    // Save System Preferences Form
+    const systemPreferencesForm = document.getElementById('systemPreferencesForm');
+    if (systemPreferencesForm) {
+        systemPreferencesForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const updatedPrefs = {
+                defaultCommission: parseFloat(document.getElementById('cfgDefaultCommission').value) || 10.0,
+                invoiceDueDay: parseInt(document.getElementById('cfgInvoiceDueDay').value, 10) || 10,
+                estimatedTaxRate: parseFloat(document.getElementById('cfgEstimatedTaxRate').value) || 5.0,
+                sessionTimeout: document.getElementById('cfgSessionTimeout').value
+            };
+
+            const res = await apiFetch('/settings', {
+                method: 'PUT',
+                body: JSON.stringify(updatedPrefs)
+            });
+
+            if (res) {
+                showToast('Preferências operacionais salvas com sucesso!', 'success');
+            } else {
+                showToast('Preferências atualizadas.', 'info');
+            }
+        });
+    }
+
+    // Render System Users Table
+    function renderSystemUsersTable(users) {
+        const tbody = document.getElementById('systemUsersTableBody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        if (!users || users.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center">Nenhum operador cadastrado.</td></tr>`;
+            return;
+        }
+
+        users.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <div class="collab-cell">
+                        <img src="${u.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'}" alt="${u.name}" class="collab-avatar">
+                        <div class="collab-meta">
+                            <span class="collab-name">${u.name}</span>
+                            <span class="collab-email">ID: ${u.id}</span>
+                        </div>
+                    </div>
+                </td>
+                <td>${u.email}</td>
+                <td><span class="segment-pill">${u.role || 'Operador'}</span></td>
+                <td>${u.lastAccess || 'Nunca'}</td>
+                <td><span class="status-badge ${u.status === 'Ativo' ? 'ativo' : 'inativo'}">${u.status}</span></td>
+                <td class="text-right">
+                    <div class="action-buttons" style="justify-content: flex-end;">
+                        <button class="icon-btn delete-btn btn-delete-user" data-id="${u.id}" title="Excluir Usuário">
+                            <i data-lucide="trash-2"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Wire delete buttons
+        document.querySelectorAll('.btn-delete-user').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                if (confirm('Tem certeza que deseja excluir o acesso deste operador?')) {
+                    const res = await apiFetch(`/settings/users/${id}`, { method: 'DELETE' });
+                    if (res) {
+                        showToast('Operador removido com sucesso.', 'info');
+                        loadSettingsOverview();
+                    }
+                }
+            });
+        });
+
+        refreshIcons();
+    }
+
+    // Modal Users Handlers
+    const btnNewUser = document.getElementById('btnNewUser');
+    const userModal = document.getElementById('userModal');
+    const closeUserModalBtn = document.getElementById('closeUserModalBtn');
+    const cancelUserBtn = document.getElementById('cancelUserBtn');
+    const userForm = document.getElementById('userForm');
+
+    if (btnNewUser) {
+        btnNewUser.addEventListener('click', () => {
+            userForm.reset();
+            document.getElementById('userId').value = '';
+            userModal.classList.remove('hidden');
+        });
+    }
+
+    if (closeUserModalBtn) {
+        closeUserModalBtn.addEventListener('click', () => userModal.classList.add('hidden'));
+    }
+    if (cancelUserBtn) {
+        cancelUserBtn.addEventListener('click', () => userModal.classList.add('hidden'));
+    }
+
+    if (userForm) {
+        userForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newUser = {
+                name: document.getElementById('userName').value,
+                email: document.getElementById('userEmail').value,
+                role: document.getElementById('userRole').value,
+                status: document.getElementById('userStatus').value
+            };
+
+            const res = await apiFetch('/settings/users', {
+                method: 'POST',
+                body: JSON.stringify(newUser)
+            });
+
+            if (res) {
+                showToast(`Operador ${newUser.name} cadastrado com sucesso!`, 'success');
+                userModal.classList.add('hidden');
+                loadSettingsOverview();
+            }
+        });
+    }
+
+    // Download Backup JSON
+    const btnDownloadBackup = document.getElementById('btnDownloadBackup');
+    if (btnDownloadBackup) {
+        btnDownloadBackup.addEventListener('click', () => {
+            window.location.href = '/api/settings/backup';
+            showToast('Download do backup iniciado...', 'info');
+        });
+    }
+
+    // Restore Backup JSON
+    const cfgRestoreInput = document.getElementById('cfgRestoreInput');
+    if (cfgRestoreInput) {
+        cfgRestoreInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (evt) => {
+                try {
+                    const backupObj = JSON.parse(evt.target.result);
+                    const res = await apiFetch('/settings/restore', {
+                        method: 'POST',
+                        body: JSON.stringify(backupObj)
+                    });
+
+                    if (res && res.success) {
+                        showToast('Banco de dados restaurado com sucesso!', 'success');
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        showToast('Erro ao restaurar backup. Verifique a estrutura do arquivo JSON.', 'error');
+                    }
+                } catch (err) {
+                    showToast('Arquivo JSON de backup inválido.', 'error');
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+
 });

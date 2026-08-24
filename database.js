@@ -166,6 +166,236 @@ const DEFAULT_DATA = {
             status: 'Ativo',
             logo: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=100&auto=format&fit=crop&q=80'
         }
+    ],
+    transactions: [
+        {
+            id: 't1',
+            date: '2026-08-05',
+            description: 'Mensalidade Patrocínio Master - Supermercados Dourados',
+            type: 'Receita',
+            category: 'Receita Comercial',
+            amount: 12500.00,
+            status: 'Pago',
+            paymentMethod: 'PIX / Transferência',
+            entity: 'Supermercados Dourados Ltda'
+        },
+        {
+            id: 't2',
+            date: '2026-08-10',
+            description: 'Cota de Patrocínio Comercial - AutoVale Dourados',
+            type: 'Receita',
+            category: 'Receita Comercial',
+            amount: 18000.00,
+            status: 'Pago',
+            paymentMethod: 'Boleto Bancário',
+            entity: 'Concessionária AutoVale Dourados'
+        },
+        {
+            id: 't3',
+            date: '2026-08-12',
+            description: 'Contrato Publicidade Trimestral - Agência Criativa',
+            type: 'Receita',
+            category: 'Receita Comercial',
+            amount: 25000.00,
+            status: 'Pago',
+            paymentMethod: 'Transferência Bancária',
+            entity: 'Agência Criativa Mídia Brasil'
+        },
+        {
+            id: 't4',
+            date: '2026-08-15',
+            description: 'Cota Especial Arena - ExpoAgro Dourados 2026',
+            type: 'Receita',
+            category: 'Receita Comercial',
+            amount: 45000.00,
+            status: 'Pendente',
+            paymentMethod: 'Boleto Bancário',
+            entity: 'ExpoAgro Dourados 2026'
+        },
+        {
+            id: 't5',
+            date: '2026-08-05',
+            description: 'Folha de Pagamento - Carlos Eduardo Oliveira',
+            type: 'Despesa',
+            category: 'Folha de Pagamento',
+            amount: 6800.00,
+            status: 'Pago',
+            paymentMethod: 'Depósito em Conta',
+            entity: 'Carlos Eduardo Oliveira'
+        },
+        {
+            id: 't6',
+            date: '2026-08-05',
+            description: 'Folha de Pagamento - Mariana Alves Prado',
+            type: 'Despesa',
+            category: 'Folha de Pagamento',
+            amount: 8500.00,
+            status: 'Pago',
+            paymentMethod: 'Depósito em Conta',
+            entity: 'Mariana Alves Prado'
+        },
+        {
+            id: 't7',
+            date: '2026-08-05',
+            description: 'Folha de Pagamento - Roberto Santos Silva',
+            type: 'Despesa',
+            category: 'Folha de Pagamento',
+            amount: 5400.00,
+            status: 'Pago',
+            paymentMethod: 'Depósito em Conta',
+            entity: 'Roberto Santos Silva'
+        },
+        {
+            id: 't8',
+            date: '2026-08-05',
+            description: 'Folha de Pagamento - Fernanda Lima Castro',
+            type: 'Despesa',
+            category: 'Folha de Pagamento',
+            amount: 4900.00,
+            status: 'Pago',
+            paymentMethod: 'Depósito em Conta',
+            entity: 'Fernanda Lima Castro'
+        },
+        {
+            id: 't9',
+            date: '2026-08-05',
+            description: 'Folha de Pagamento - Lucas Mendes Rocha',
+            type: 'Despesa',
+            category: 'Folha de Pagamento',
+            amount: 3800.00,
+            status: 'Pago',
+            paymentMethod: 'Depósito em Conta',
+            entity: 'Lucas Mendes Rocha'
+        },
+        {
+            id: 't10',
+            date: '2026-08-05',
+            description: 'Folha de Pagamento - Juliana Prado Ribeiro',
+            type: 'Despesa',
+            category: 'Folha de Pagamento',
+            amount: 5600.00,
+            status: 'Pago',
+            paymentMethod: 'Depósito em Conta',
+            entity: 'Juliana Prado Ribeiro'
+        },
+        {
+            id: 't11',
+            date: '2026-08-10',
+            description: 'Energia Elétrica Parque Transmissor FM (Energisa)',
+            type: 'Despesa',
+            category: 'Energia & Transmissor',
+            amount: 14200.00,
+            status: 'Pago',
+            paymentMethod: 'Débito Automático',
+            entity: 'Energisa MS'
+        },
+        {
+            id: 't12',
+            date: '2026-08-18',
+            description: 'Licença Direitos Autorais Execução Musical (ECAD)',
+            type: 'Despesa',
+            category: 'Impostos & Licenças',
+            amount: 4200.00,
+            status: 'Pago',
+            paymentMethod: 'Boleto Bancário',
+            entity: 'ECAD Nacional'
+        },
+        {
+            id: 't13',
+            date: '2026-08-20',
+            description: 'Taxa FISTEL / outorga Anatel 94.5 FM',
+            type: 'Despesa',
+            category: 'Impostos & Licenças',
+            amount: 2850.00,
+            status: 'Pago',
+            paymentMethod: 'GRU Anatel',
+            entity: 'Anatel Minist. Comunicações'
+        },
+        {
+            id: 't14',
+            date: '2026-08-25',
+            description: 'Manutenção Preventiva Módulo Potência Transmissor',
+            type: 'Despesa',
+            category: 'Manutenção Técnica',
+            amount: 3500.00,
+            status: 'Pendente',
+            paymentMethod: 'Boleto Bancário',
+            entity: 'Telecom Engenharia'
+        },
+        {
+            id: 't15',
+            date: '2026-08-28',
+            description: 'Comissões Vendas Comerciais - Mariana Alves (Ref. Jul/Ago)',
+            type: 'Despesa',
+            category: 'Comissões Vendas',
+            amount: 5030.00,
+            status: 'Pendente',
+            paymentMethod: 'Transferência Bancária',
+            entity: 'Mariana Alves Prado'
+        }
+    ],
+    settings: {
+        companyName: 'Rádio Grande FM Ltda',
+        tradeName: 'Rádio Grande FM 94.5',
+        cnpj: '03.882.114/0001-92',
+        frequency: '94.5 MHz',
+        power: '10 kW',
+        city: 'Dourados',
+        state: 'MS',
+        address: 'Av. Marcelino Pires, 1400 - Centro, Dourados - MS',
+        email: 'financeiro@grandefm.com.br',
+        phone: '(67) 3411-9450',
+        pixKey: '03.882.114/0001-92',
+        pixKeyType: 'CNPJ',
+        bankName: 'Banco do Brasil S.A.',
+        agency: '0084-5',
+        account: '19450-8',
+        defaultCommission: 10.0,
+        invoiceDueDay: 10,
+        estimatedTaxRate: 5.0,
+        sessionTimeout: '30m',
+        sslEnabled: true,
+        emailNotifications: true,
+        overdueAlerts: true,
+        defaultTheme: 'dark'
+    },
+    users: [
+        {
+            id: 'u1',
+            name: 'Administrador GFM',
+            email: 'admin@grandefm.com.br',
+            role: 'Administrador GFM',
+            status: 'Ativo',
+            lastAccess: '2026-08-23 21:44',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
+        },
+        {
+            id: 'u2',
+            name: 'Juliana Prado Ribeiro',
+            email: 'juliana.prado@grandefm.com.br',
+            role: 'Gestor Financeiro',
+            status: 'Ativo',
+            lastAccess: '2026-08-23 18:20',
+            avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80'
+        },
+        {
+            id: 'u3',
+            name: 'Mariana Alves Prado',
+            email: 'mariana.alves@grandefm.com.br',
+            role: 'Diretor Comercial',
+            status: 'Ativo',
+            lastAccess: '2026-08-22 11:15',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
+        },
+        {
+            id: 'u4',
+            name: 'Roberto Santos Silva',
+            email: 'roberto.santos@grandefm.com.br',
+            role: 'Operador de Transmissão',
+            status: 'Ativo',
+            lastAccess: '2026-08-21 09:30',
+            avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80'
+        }
     ]
 };
 
@@ -183,7 +413,24 @@ function readDb() {
     initDb();
     try {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
-        return JSON.parse(raw);
+        const db = JSON.parse(raw);
+        let updated = false;
+
+        if (!db.transactions) {
+            db.transactions = DEFAULT_DATA.transactions;
+            updated = true;
+        }
+        if (!db.settings) {
+            db.settings = DEFAULT_DATA.settings;
+            updated = true;
+        }
+        if (!db.users) {
+            db.users = DEFAULT_DATA.users;
+            updated = true;
+        }
+
+        if (updated) writeDb(db);
+        return db;
     } catch (err) {
         console.error('Erro ao ler banco de dados:', err);
         return DEFAULT_DATA;

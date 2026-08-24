@@ -276,6 +276,293 @@ app.delete('/api/clients/:id', (req, res) => {
     res.json({ success: true, deleted: deleted[0] });
 });
 
+// ==========================================================================
+// 5. FINANCIAL & DRE ENDPOINTS
+// ==========================================================================
+
+// GET /api/financial/transactions
+app.get('/api/financial/transactions', (req, res) => {
+    const db = readDb();
+    let txs = db.transactions || [];
+    const { search, type, status, category } = req.query;
+
+    if (search) {
+        const q = search.toLowerCase();
+        txs = txs.filter(t => 
+            (t.description && t.description.toLowerCase().includes(q)) ||
+            (t.category && t.category.toLowerCase().includes(q)) ||
+            (t.entity && t.entity.toLowerCase().includes(q)) ||
+            (t.paymentMethod && t.paymentMethod.toLowerCase().includes(q))
+        );
+    }
+
+    if (type && type !== 'ALL') {
+        txs = txs.filter(t => t.type === type);
+    }
+
+    if (status && status !== 'ALL') {
+        txs = txs.filter(t => t.status === status);
+    }
+
+    if (category && category !== 'ALL') {
+        txs = txs.filter(t => t.category === category);
+    }
+
+    // Sort by date descending
+    txs.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    res.json(txs);
+});
+
+// POST /api/financial/transactions
+app.post('/api/financial/transactions', (req, res) => {
+    const db = readDb();
+    if (!db.transactions) db.transactions = [];
+
+    const newTx = {
+        id: req.body.id || 't' + Date.now().toString(),
+        date: req.body.date || new Date().toISOString().split('T')[0],
+        description: req.body.description,
+        type: req.body.type || 'Receita', // Receita or Despesa
+        category: req.body.category || 'Outros',
+        amount: parseFloat(req.body.amount) || 0,
+        status: req.body.status || 'Pendente', // Pago, Pendente, Atrasado
+        paymentMethod: req.body.paymentMethod || 'PIX / Transferência',
+        entity: req.body.entity || '-'
+    };
+
+    if (!newTx.description || !newTx.amount) {
+        return res.status(400).json({ error: 'Descrição e valor são obrigatórios.' });
+    }
+
+    db.transactions.unshift(newTx);
+    writeDb(db);
+    res.status(201).json(newTx);
+});
+
+// PUT /api/financial/transactions/:id
+app.put('/api/financial/transactions/:id', (req, res) => {
+    const db = readDb();
+    if (!db.transactions) db.transactions = [];
+
+    const idx = db.transactions.findIndex(t => t.id === req.params.id);
+
+    if (idx === -1) {
+        return res.status(404).json({ error: 'Lançamento não encontrado.' });
+    }
+
+    db.transactions[idx] = {
+        ...db.transactions[idx],
+        ...req.body,
+        amount: req.body.amount !== undefined ? parseFloat(req.body.amount) : db.transactions[idx].amount
+    };
+
+    writeDb(db);
+    res.json(db.transactions[idx]);
+});
+
+// DELETE /api/financial/transactions/:id
+app.delete('/api/financial/transactions/:id', (req, res) => {
+    const db = readDb();
+    if (!db.transactions) db.transactions = [];
+
+    const idx = db.transactions.findIndex(t => t.id === req.params.id);
+
+    if (idx === -1) {
+        return res.status(404).json({ error: 'Lançamento não encontrado.' });
+    }
+
+    const deleted = db.transactions.splice(idx, 1);
+    writeDb(db);
+    res.json({ success: true, deleted: deleted[0] });
+});
+
+// GET /api/financial/summary
+app.get('/api/financial/summary', (req, res) => {
+    const db = readDb();
+    const txs = db.transactions || [];
+    const clients = db.clients || [];
+    const collabs = db.collaborators || [];
+
+    const totalReceitas = txs
+        .filter(t => t.type === 'Receita')
+        .reduce((acc, t) => acc + parseFloat(t.amount || 0), 0);
+
+    const totalReceitasPagas = txs
+        .filter(t => t.type === 'Receita' && t.status === 'Pago')
+        .reduce((acc, t) => acc + parseFloat(t.amount || 0), 0);
+
+    const totalDespesas = txs
+        .filter(t => t.type === 'Despesa')
+        .reduce((acc, t) => acc + parseFloat(t.amount || 0), 0);
+
+    const totalDespesasPagas = txs
+        .filter(t => t.type === 'Despesa' && t.status === 'Pago')
+        .reduce((acc, t) => acc + parseFloat(t.amount || 0), 0);
+
+    const resultadoLiquido = totalReceitas - totalDespesas;
+    const resultadoCaixaEfetivado = totalReceitasPagas - totalDespesasPagas;
+
+    // Executive Commissions dynamic calculation
+    let totalCommissions = 0;
+    const commissionsByExec = {};
+
+    clients.forEach(client => {
+        if (client.status === 'Ativo') {
+            const clientVal = parseFloat(client.value || 0);
+            if (client.executives && Array.isArray(client.executives) && client.executives.length > 0) {
+                client.executives.forEach(item => {
+                    const execCode = item.executive;
+                    const commRate = parseFloat(item.commission || 0);
+                    const commVal = clientVal * (commRate / 100);
+                    totalCommissions += commVal;
+                    
+                    const collab = collabs.find(c => String(c.code).padStart(2, '0') === String(execCode).padStart(2, '0'));
+                    const execName = collab ? collab.name : `Executivo ${execCode}`;
+                    
+                    if (!commissionsByExec[execCode]) {
+                        commissionsByExec[execCode] = {
+                            code: execCode,
+                            name: execName,
+                            totalContracts: 0,
+                            totalValue: 0,
+                            totalCommission: 0
+                        };
+                    }
+                    commissionsByExec[execCode].totalContracts += 1;
+                    commissionsByExec[execCode].totalValue += clientVal;
+                    commissionsByExec[execCode].totalCommission += commVal;
+                });
+            } else if (client.executive) {
+                const execCode = client.executive;
+                const commRate = parseFloat(client.commission || 10);
+                const commVal = clientVal * (commRate / 100);
+                totalCommissions += commVal;
+
+                const collab = collabs.find(c => String(c.code).padStart(2, '0') === String(execCode).padStart(2, '0'));
+                const execName = collab ? collab.name : `Executivo ${execCode}`;
+
+                if (!commissionsByExec[execCode]) {
+                    commissionsByExec[execCode] = {
+                        code: execCode,
+                        name: execName,
+                        totalContracts: 0,
+                        totalValue: 0,
+                        totalCommission: 0
+                    };
+                }
+                commissionsByExec[execCode].totalContracts += 1;
+                commissionsByExec[execCode].totalValue += clientVal;
+                commissionsByExec[execCode].totalCommission += commVal;
+            }
+        }
+    });
+
+    res.json({
+        totalReceitas,
+        totalReceitasPagas,
+        totalDespesas,
+        totalDespesasPagas,
+        resultadoLiquido,
+        resultadoCaixaEfetivado,
+        totalCommissions,
+        commissionsByExec: Object.values(commissionsByExec),
+        totalTransactionsCount: txs.length
+    });
+});
+
+
+// ==========================================================================
+// 6. SYSTEM SETTINGS & BACKUP ENDPOINTS
+// ==========================================================================
+
+// GET /api/settings
+app.get('/api/settings', (req, res) => {
+    const db = readDb();
+    res.json(db.settings || {});
+});
+
+// PUT /api/settings
+app.put('/api/settings', (req, res) => {
+    const db = readDb();
+    db.settings = {
+        ...(db.settings || {}),
+        ...req.body
+    };
+    writeDb(db);
+    res.json(db.settings);
+});
+
+// GET /api/settings/backup (Download JSON)
+app.get('/api/settings/backup', (req, res) => {
+    const db = readDb();
+    const fileName = `Backup_Financeiro_GFM_${new Date().toISOString().split('T')[0]}.json`;
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.send(JSON.stringify(db, null, 2));
+});
+
+// POST /api/settings/restore (Upload JSON)
+app.post('/api/settings/restore', (req, res) => {
+    const backupData = req.body;
+    if (!backupData || typeof backupData !== 'object') {
+        return res.status(400).json({ error: 'Arquivo de backup inválido ou corrompido.' });
+    }
+
+    // Basic schema check
+    if (!backupData.collaborators || !backupData.clients) {
+        return res.status(400).json({ error: 'O backup deve conter colaboradores e clientes válidos.' });
+    }
+
+    writeDb(backupData);
+    res.json({ success: true, message: 'Banco de dados restaurado com sucesso!' });
+});
+
+// GET /api/settings/users
+app.get('/api/settings/users', (req, res) => {
+    const db = readDb();
+    res.json(db.users || []);
+});
+
+// POST /api/settings/users
+app.post('/api/settings/users', (req, res) => {
+    const db = readDb();
+    if (!db.users) db.users = [];
+
+    const newUser = {
+        id: req.body.id || 'u' + Date.now().toString(),
+        name: req.body.name,
+        email: req.body.email,
+        role: req.body.role || 'Gestor Financeiro',
+        status: req.body.status || 'Ativo',
+        lastAccess: 'Nunca',
+        avatar: req.body.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
+    };
+
+    if (!newUser.name || !newUser.email) {
+        return res.status(400).json({ error: 'Nome e e-mail são obrigatórios.' });
+    }
+
+    db.users.unshift(newUser);
+    writeDb(db);
+    res.status(201).json(newUser);
+});
+
+// DELETE /api/settings/users/:id
+app.delete('/api/settings/users/:id', (req, res) => {
+    const db = readDb();
+    if (!db.users) db.users = [];
+
+    const idx = db.users.findIndex(u => u.id === req.params.id);
+    if (idx === -1) {
+        return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+
+    const deleted = db.users.splice(idx, 1);
+    writeDb(db);
+    res.json({ success: true, deleted: deleted[0] });
+});
+
 // SPA Fallback — always serve GFM index.html for non-API routes
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));

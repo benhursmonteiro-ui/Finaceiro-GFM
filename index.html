@@ -215,11 +215,6 @@
                     </div>
 
                     <div class="header-right">
-                        <div class="station-status-pill">
-                            <span class="pulse-dot"></span>
-                            <span>Grande FM 94.5 Ao Vivo</span>
-                        </div>
-
                         <button class="theme-toggle-btn themeBtn" aria-label="Alternar Tema">
                             <i data-lucide="sun" class="sun-icon"></i>
                             <i data-lucide="moon" class="moon-icon"></i>
@@ -476,20 +471,638 @@
                         </div>
                     </section>
 
-                    <!-- SECTION 4: PLACEHOLDER OUTRAS SEÇÕES -->
+                    <!-- SECTION 4: MÓDULO FINANCEIRO & DRE GFM -->
                     <section id="financialSection" class="content-section hidden">
-                        <div class="panel-card placeholder-panel">
-                            <i data-lucide="circle-dollar-sign" class="placeholder-icon"></i>
-                            <h2>Módulo Financeiro & DRE Grande FM</h2>
-                            <p>Controle de fluxo de caixa, patrocínios comerciais e centro de custos em desenvolvimento.</p>
+                        
+                        <!-- Financial KPI Cards Row -->
+                        <div class="kpi-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-icon green">
+                                    <i data-lucide="trending-up"></i>
+                                </div>
+                                <div class="kpi-details">
+                                    <span class="kpi-label">Receita Bruta (Entradas)</span>
+                                    <h3 class="kpi-value" id="finKpiIncome">R$ 0,00</h3>
+                                    <span class="kpi-subtext positive" id="finKpiIncomeSub"><i data-lucide="arrow-up-right"></i> Contratos Comerciais</span>
+                                </div>
+                            </div>
+
+                            <div class="kpi-card">
+                                <div class="kpi-icon red">
+                                    <i data-lucide="trending-down"></i>
+                                </div>
+                                <div class="kpi-details">
+                                    <span class="kpi-label">Despesas Operacionais (Saídas)</span>
+                                    <h3 class="kpi-value" id="finKpiExpense">R$ 0,00</h3>
+                                    <span class="kpi-subtext negative" id="finKpiExpenseSub"><i data-lucide="arrow-down-right"></i> Folha + Transmissão</span>
+                                </div>
+                            </div>
+
+                            <div class="kpi-card">
+                                <div class="kpi-icon blue">
+                                    <i data-lucide="pie-chart"></i>
+                                </div>
+                                <div class="kpi-details">
+                                    <span class="kpi-label">Resultado Líquido (Lucro)</span>
+                                    <h3 class="kpi-value" id="finKpiNet">R$ 0,00</h3>
+                                    <span class="kpi-subtext positive" id="finKpiNetMargin">Margem: 0%</span>
+                                </div>
+                            </div>
+
+                            <div class="kpi-card">
+                                <div class="kpi-icon gold">
+                                    <i data-lucide="badge-percent"></i>
+                                </div>
+                                <div class="kpi-details">
+                                    <span class="kpi-label">Comissões de Vendas</span>
+                                    <h3 class="kpi-value" id="finKpiCommission">R$ 0,00</h3>
+                                    <span class="kpi-subtext" id="finKpiCommissionSub">Executivos Comerciais</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel Header with Sub-Tabs Navigation -->
+                        <div class="panel-card main-panel">
+                            <div class="panel-header financial-panel-header">
+                                <div class="fin-subtabs-container">
+                                    <button class="fin-subtab active" data-fin-tab="cashflow">
+                                        <i data-lucide="list-ordered"></i>
+                                        <span>Fluxo de Caixa</span>
+                                    </button>
+                                    <button class="fin-subtab" data-fin-tab="dre">
+                                        <i data-lucide="file-spreadsheet"></i>
+                                        <span>DRE Demonstrativo</span>
+                                    </button>
+                                    <button class="fin-subtab" data-fin-tab="commissions">
+                                        <i data-lucide="award"></i>
+                                        <span>Comissões Vendas</span>
+                                    </button>
+                                    <button class="fin-subtab" data-fin-tab="charts">
+                                        <i data-lucide="bar-chart-3"></i>
+                                        <span>Gráficos & Análise</span>
+                                    </button>
+                                </div>
+
+                                <div class="header-actions">
+                                    <button id="btnSyncContracts" class="action-btn secondary" title="Gerar lançamentos a partir de contratos ativos e folha">
+                                        <i data-lucide="refresh-cw"></i>
+                                        <span>Sincronizar</span>
+                                    </button>
+                                    <button id="btnExportCsv" class="action-btn secondary" title="Exportar Fluxo de Caixa em CSV">
+                                        <i data-lucide="download"></i>
+                                        <span>Exportar CSV</span>
+                                    </button>
+                                    <button id="btnNewIncome" class="action-btn green-btn" title="Cadastrar nova receita comercial">
+                                        <i data-lucide="arrow-up-right"></i>
+                                        <span>+ Nova Entrada</span>
+                                    </button>
+                                    <button id="btnNewExpense" class="action-btn red-btn" title="Cadastrar nova despesa / pagamento">
+                                        <i data-lucide="arrow-down-right"></i>
+                                        <span>- Nova Saída</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- SUB-VIEW 1: FLUXO DE CAIXA (TRANSAÇÕES) -->
+                            <div id="finCashflowView" class="fin-tab-content">
+                                <!-- Filter Toolbar -->
+                                <div class="table-toolbar">
+                                    <div class="search-box">
+                                        <i data-lucide="search" class="search-icon"></i>
+                                        <input type="text" id="txSearchInput" placeholder="Buscar por descrição, entidade ou categoria...">
+                                    </div>
+                                    <div class="toolbar-filters">
+                                        <div class="select-wrapper">
+                                            <select id="txTypeFilter" class="toolbar-select">
+                                                <option value="ALL">Todas (Entradas & Saídas)</option>
+                                                <option value="Receita">💚 Entradas (Receitas)</option>
+                                                <option value="Despesa">🔴 Saídas (Despesas)</option>
+                                            </select>
+                                        </div>
+                                        <div class="select-wrapper">
+                                            <select id="txStatusFilter" class="toolbar-select">
+                                                <option value="ALL">Todos os Status</option>
+                                                <option value="Pago">Pago / Quitado</option>
+                                                <option value="Pendente">Pendente</option>
+                                                <option value="Atrasado">Atrasado</option>
+                                            </select>
+                                        </div>
+                                        <div class="select-wrapper">
+                                            <select id="txCategoryFilter" class="toolbar-select">
+                                                <option value="ALL">Todas as Categorias</option>
+                                                <option value="Receita Comercial">Receita Comercial</option>
+                                                <option value="Folha de Pagamento">Folha de Pagamento</option>
+                                                <option value="Energia & Transmissor">Energia & Transmissor</option>
+                                                <option value="Impostos & Licenças">Impostos & Licenças</option>
+                                                <option value="Manutenção Técnica">Manutenção Técnica</option>
+                                                <option value="Comissões Vendas">Comissões Vendas</option>
+                                                <option value="Outros">Outros</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Transactions Table -->
+                                <div class="table-responsive">
+                                    <table id="financialTable" class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Data Venc.</th>
+                                                <th>Descrição do Lançamento</th>
+                                                <th>Categoria</th>
+                                                <th>Entidade / Origem</th>
+                                                <th>Forma Pagto</th>
+                                                <th>Tipo</th>
+                                                <th>Valor (R$)</th>
+                                                <th>Status</th>
+                                                <th class="text-right">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="financialTableBody">
+                                            <!-- Dynamically populated -->
+                                        </tbody>
+                                    </table>
+
+                                    <div id="emptyFinState" class="empty-state hidden">
+                                        <i data-lucide="receipt" class="empty-icon"></i>
+                                        <h3>Nenhum lançamento financeiro encontrado</h3>
+                                        <p>Ajuste os filtros de pesquisa ou cadastre uma nova transação financeira.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SUB-VIEW 2: DRE DEMONSTRATIVO -->
+                            <div id="finDreView" class="fin-tab-content hidden">
+                                <div class="dre-info-banner">
+                                    <div class="dre-info-text">
+                                        <h4><i data-lucide="info"></i> Demonstrativo do Resultado do Exercício - Grande FM 94.5</h4>
+                                        <p>Visão gerencial consolidada das receitas comerciais, deduções regulatórias, custos de transmissão e resultado líquido.</p>
+                                    </div>
+                                    <div class="dre-period-badge">
+                                        <span>Período: <strong>Agosto / 2026</strong></span>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="data-table dre-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Conta / Estrutura de Resultados</th>
+                                                <th class="text-right">Valor Consolidado (R$)</th>
+                                                <th class="text-right">% s/ Rec. Bruta</th>
+                                                <th>Classificação</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dreTableBody">
+                                            <!-- Dynamically generated in script.js -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- SUB-VIEW 3: COMISSÕES COMERCIAIS -->
+                            <div id="finCommissionsView" class="fin-tab-content hidden">
+                                <div class="commissions-summary-banner">
+                                    <div class="commissions-info">
+                                        <i data-lucide="award" class="comm-banner-icon"></i>
+                                        <div>
+                                            <h4>Relatório de Comissões dos Executivos de Vendas</h4>
+                                            <p>Cálculo em tempo real baseado no faturamento dos contratos comerciais sob gestão de cada executivo.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Cód.</th>
+                                                <th>Executivo Comercial</th>
+                                                <th>Contratos Geridos</th>
+                                                <th class="text-right">Faturamento Total (R$)</th>
+                                                <th class="text-right">% Média Comissão</th>
+                                                <th class="text-right">Comissão Devida (R$)</th>
+                                                <th class="text-center">Status Pagamento</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="commissionsTableBody">
+                                            <!-- Dynamically populated -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- SUB-VIEW 4: GRÁFICOS & ANÁLISE -->
+                            <div id="finChartsView" class="fin-tab-content hidden">
+                                <div class="financial-charts-grid">
+                                    <div class="chart-panel-card">
+                                        <div class="chart-panel-header">
+                                            <h3><i data-lucide="sliders"></i> Distribuição das Despesas Operacionais</h3>
+                                            <span class="badge-tag">Mês Atual</span>
+                                        </div>
+                                        <div class="category-breakdown-list" id="finCategoryBreakdown">
+                                            <!-- Dynamically populated -->
+                                        </div>
+                                    </div>
+
+                                    <div class="chart-panel-card">
+                                        <div class="chart-panel-header">
+                                            <h3><i data-lucide="shield-check"></i> Indicadores de Saúde Financeira</h3>
+                                            <span class="badge-tag green">Operacional OK</span>
+                                        </div>
+                                        <div class="financial-health-metrics">
+                                            <div class="health-item">
+                                                <div class="health-info">
+                                                    <span>Margem EBITDA / Lucro Operacional</span>
+                                                    <strong id="healthEbitdaMargim">0%</strong>
+                                                </div>
+                                                <div class="progress-bar-bg"><div class="progress-bar-fill green" id="healthEbitdaBar" style="width: 0%"></div></div>
+                                            </div>
+
+                                            <div class="health-item">
+                                                <div class="health-info">
+                                                    <span>Comprometimento com Folha de Pagamento</span>
+                                                    <strong id="healthPayrollRatio">0%</strong>
+                                                </div>
+                                                <div class="progress-bar-bg"><div class="progress-bar-fill blue" id="healthPayrollBar" style="width: 0%"></div></div>
+                                            </div>
+
+                                            <div class="health-item">
+                                                <div class="health-info">
+                                                    <span>Custo de Transmissão vs Receita Bruta</span>
+                                                    <strong id="healthTransmitterRatio">0%</strong>
+                                                </div>
+                                                <div class="progress-bar-bg"><div class="progress-bar-fill gold" id="healthTransmitterBar" style="width: 0%"></div></div>
+                                            </div>
+
+                                            <div class="health-item">
+                                                <div class="health-info">
+                                                    <span>Taxa de Adimplência (Receitas Pagas)</span>
+                                                    <strong id="healthAdimplenceRatio">0%</strong>
+                                                </div>
+                                                <div class="progress-bar-bg"><div class="progress-bar-fill purple" id="healthAdimplenceBar" style="width: 0%"></div></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </section>
 
+                    <!-- SECTION 5: CONFIGURAÇÕES DO SISTEMA GFM -->
                     <section id="settingsSection" class="content-section hidden">
-                        <div class="panel-card placeholder-panel">
-                            <i data-lucide="settings" class="placeholder-icon"></i>
-                            <h2>Configurações do Sistema</h2>
-                            <p>Parâmetros de segurança SSL, permissões de usuários e backup do banco de dados GFM.</p>
+                        <div class="panel-card main-panel">
+                            
+                            <!-- Sub-Tabs Header Navigation -->
+                            <div class="panel-header financial-panel-header">
+                                <div class="fin-subtabs-container">
+                                    <button class="cfg-subtab active" data-cfg-tab="profile">
+                                        <i data-lucide="building"></i>
+                                        <span>Perfil da Emissora</span>
+                                    </button>
+                                    <button class="cfg-subtab" data-cfg-tab="users">
+                                        <i data-lucide="shield-check"></i>
+                                        <span>Usuários & Permissões</span>
+                                    </button>
+                                    <button class="cfg-subtab" data-cfg-tab="backup">
+                                        <i data-lucide="database"></i>
+                                        <span>Backup & Banco</span>
+                                    </button>
+                                    <button class="cfg-subtab" data-cfg-tab="security">
+                                        <i data-lucide="lock"></i>
+                                        <span>Segurança & SSL</span>
+                                    </button>
+                                    <button class="cfg-subtab" data-cfg-tab="preferences">
+                                        <i data-lucide="sliders"></i>
+                                        <span>Preferências</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- SUB-VIEW 1: PERFIL DA EMISSORA & DADOS BANCÁRIOS -->
+                            <div id="cfgProfileView" class="cfg-tab-content">
+                                <form id="companyProfileForm" class="settings-form">
+                                    <div class="settings-section-title">
+                                        <i data-lucide="radio" class="title-icon"></i>
+                                        <div>
+                                            <h3>Dados Cadastrais da Rádio Grande FM</h3>
+                                            <p>Parâmetros institucionais, endereço dos estúdios e transmissão</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-grid">
+                                        <div class="input-group">
+                                            <label for="cfgCompanyName">Razão Social *</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="building" class="input-icon"></i>
+                                                <input type="text" id="cfgCompanyName" value="Rádio Grande FM Ltda" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label for="cfgTradeName">Nome Fantasia / Emissora *</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="radio" class="input-icon"></i>
+                                                <input type="text" id="cfgTradeName" value="Rádio Grande FM 94.5" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label for="cfgCnpj">CNPJ *</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="file-text" class="input-icon"></i>
+                                                <input type="text" id="cfgCnpj" value="03.882.114/0001-92" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label for="cfgFrequency">Frequência de Operação *</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="rss" class="input-icon"></i>
+                                                <input type="text" id="cfgFrequency" value="94.5 MHz" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label for="cfgPower">Potência do Transmissor</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="zap" class="input-icon"></i>
+                                                <input type="text" id="cfgPower" value="10 kW">
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label for="cfgCityState">Cidade / UF *</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="map-pin" class="input-icon"></i>
+                                                <input type="text" id="cfgCityState" value="Dourados - MS" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group full-width">
+                                            <label for="cfgAddress">Endereço dos Estúdios</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="navigation" class="input-icon"></i>
+                                                <input type="text" id="cfgAddress" value="Av. Marcelino Pires, 1400 - Centro, Dourados - MS">
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label for="cfgEmail">E-mail Comercial Corporativo</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="mail" class="input-icon"></i>
+                                                <input type="email" id="cfgEmail" value="financeiro@grandefm.com.br">
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label for="cfgPhone">Telefone de Contato</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="phone" class="input-icon"></i>
+                                                <input type="text" id="cfgPhone" value="(67) 3411-9450">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="settings-section-title style-mt">
+                                        <i data-lucide="landmark" class="title-icon"></i>
+                                        <div>
+                                            <h3>Dados Bancários & Chave PIX Oficial</h3>
+                                            <p>Informações de conta bancária para recebimento de faturas de patrocínio comercial</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-grid">
+                                        <div class="input-group">
+                                            <label for="cfgPixKey">Chave PIX Oficial *</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="qr-code" class="input-icon"></i>
+                                                <input type="text" id="cfgPixKey" value="03.882.114/0001-92" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label for="cfgPixKeyType">Tipo de Chave PIX</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="key" class="input-icon"></i>
+                                                <select id="cfgPixKeyType">
+                                                    <option value="CNPJ">CNPJ</option>
+                                                    <option value="E-mail">E-mail Corporativo</option>
+                                                    <option value="Telefone">Telefone</option>
+                                                    <option value="Aleatória">Chave Aleatória</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label for="cfgBankName">Instituição Bancária</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="building-2" class="input-icon"></i>
+                                                <input type="text" id="cfgBankName" value="Banco do Brasil S.A.">
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label for="cfgAgency">Agência</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="git-commit" class="input-icon"></i>
+                                                <input type="text" id="cfgAgency" value="0084-5">
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group full-width">
+                                            <label for="cfgAccount">Conta Corrente</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="credit-card" class="input-icon"></i>
+                                                <input type="text" id="cfgAccount" value="19450-8">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-actions-right">
+                                        <button type="submit" class="action-btn green-btn">
+                                            <i data-lucide="save"></i>
+                                            <span>Salvar Dados da Emissora</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- SUB-VIEW 2: USUÁRIOS & PERMISSÕES -->
+                            <div id="cfgUsersView" class="cfg-tab-content hidden">
+                                <div class="users-header-toolbar">
+                                    <div>
+                                        <h4>Gestão de Operadores do Sistema</h4>
+                                        <p>Usuários com acesso ao portal Financeiro GFM e seus papéis operacionais</p>
+                                    </div>
+                                    <button id="btnNewUser" class="action-btn green-btn">
+                                        <i data-lucide="user-plus"></i>
+                                        <span>+ Novo Usuário</span>
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table id="systemUsersTable" class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Usuário / Operador</th>
+                                                <th>E-mail Corporativo</th>
+                                                <th>Papel / Permissões</th>
+                                                <th>Último Acesso</th>
+                                                <th>Status</th>
+                                                <th class="text-right">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="systemUsersTableBody">
+                                            <!-- Dynamically populated via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- SUB-VIEW 3: BACKUP & BANCO DE DADOS -->
+                            <div id="cfgBackupView" class="cfg-tab-content hidden">
+                                <div class="backup-kpi-grid">
+                                    <div class="kpi-card">
+                                        <div class="kpi-icon blue">
+                                            <i data-lucide="database"></i>
+                                        </div>
+                                        <div class="kpi-details">
+                                            <span class="kpi-label">Status da Base de Dados</span>
+                                            <h3 class="kpi-value positive-text">Online (JSON)</h3>
+                                            <span class="kpi-subtext">Arquivo: data/db.json</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="kpi-card">
+                                        <div class="kpi-icon gold">
+                                            <i data-lucide="hard-drive"></i>
+                                        </div>
+                                        <div class="kpi-details">
+                                            <span class="kpi-label">Total de Registros</span>
+                                            <h3 class="kpi-value" id="cfgDbTotalRecords">0 Registros</h3>
+                                            <span class="kpi-subtext">Colaboradores + Clientes + Tx</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="backup-actions-grid">
+                                    <div class="backup-card">
+                                        <div class="backup-card-icon green">
+                                            <i data-lucide="download-cloud"></i>
+                                        </div>
+                                        <h4>Download de Backup Completo</h4>
+                                        <p>Gere uma cópia de segurança em formato JSON contendo todos os cadastros, contratos e lançamentos do caixa.</p>
+                                        <button id="btnDownloadBackup" class="action-btn green-btn full-width-btn">
+                                            <i data-lucide="download"></i>
+                                            <span>Baixar Backup em JSON</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="backup-card">
+                                        <div class="backup-card-icon blue">
+                                            <i data-lucide="upload-cloud"></i>
+                                        </div>
+                                        <h4>Restaurar Backup do Banco</h4>
+                                        <p>Selecione um arquivo de backup em JSON previamente salvo para restaurar a base de dados do sistema.</p>
+                                        <div class="file-upload-dropzone">
+                                            <input type="file" id="cfgRestoreInput" accept=".json" class="hidden-file-input">
+                                            <label for="cfgRestoreInput" class="upload-dropzone-label">
+                                                <i data-lucide="file-json"></i>
+                                                <span>Selecionar Arquivo JSON</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SUB-VIEW 4: SEGURANÇA & SSL -->
+                            <div id="cfgSecurityView" class="cfg-tab-content hidden">
+                                <div class="security-cards-grid">
+                                    <div class="security-card">
+                                        <div class="sec-card-header">
+                                            <i data-lucide="shield-check" class="sec-icon green"></i>
+                                            <div>
+                                                <h4>Certificação SSL / TLS 256-bit</h4>
+                                                <span class="status-pill status-paid">Conexão Segura Ativa</span>
+                                            </div>
+                                        </div>
+                                        <p>Toda a comunicação entre o navegador e o servidor da Rádio Grande FM é criptografada via protocolo HTTPS/SSL.</p>
+                                    </div>
+
+                                    <div class="security-card">
+                                        <div class="sec-card-header">
+                                            <i data-lucide="clock" class="sec-icon blue"></i>
+                                            <div>
+                                                <h4>Tempo Limite de Sessão</h4>
+                                                <span class="status-pill status-pending">Expiração: 30 minutos</span>
+                                            </div>
+                                        </div>
+                                        <p>Por motivos de segurança financeira, a sessão é automaticamente encerrada após inatividade prolongada.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SUB-VIEW 5: PREFERÊNCIAS DO SISTEMA -->
+                            <div id="cfgPreferencesView" class="cfg-tab-content hidden">
+                                <form id="systemPreferencesForm" class="settings-form">
+                                    <div class="settings-section-title">
+                                        <i data-lucide="sliders" class="title-icon"></i>
+                                        <div>
+                                            <h3>Preferências Operacionais & Notificações</h3>
+                                            <p>Parâmetros globais de alíquotas, alertas por e-mail e exibição</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-grid">
+                                        <div class="input-group">
+                                            <label for="cfgDefaultCommission">Comissão Padrão de Vendas (%)</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="percent" class="input-icon"></i>
+                                                <input type="number" id="cfgDefaultCommission" step="0.1" value="10.0">
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label for="cfgInvoiceDueDay">Dia Padrão Vencimento Faturas</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="calendar" class="input-icon"></i>
+                                                <input type="number" id="cfgInvoiceDueDay" min="1" max="31" value="10">
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label for="cfgEstimatedTaxRate">Alíquota Estimada Impostos (%)</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="receipt" class="input-icon"></i>
+                                                <input type="number" id="cfgEstimatedTaxRate" step="0.1" value="5.0">
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label for="cfgSessionTimeout">Tempo Limite de Sessão</label>
+                                            <div class="input-wrapper">
+                                                <i data-lucide="clock" class="input-icon"></i>
+                                                <select id="cfgSessionTimeout">
+                                                    <option value="15m">15 Minutos</option>
+                                                    <option value="30m" selected>30 Minutos</option>
+                                                    <option value="1h">1 Hora</option>
+                                                    <option value="8h">8 Horas (Jornada)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-actions-right style-mt">
+                                        <button type="submit" class="action-btn green-btn">
+                                            <i data-lucide="save"></i>
+                                            <span>Salvar Preferências</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
                         </div>
                     </section>
 
@@ -796,21 +1409,196 @@
         </div>
     </div>
 
-    <!-- Radio Audio Widget -->
-    <div class="radio-widget" id="radioWidget">
-        <div class="radio-info">
-            <div class="audio-waves-icon">
-                <span></span><span></span><span></span><span></span>
+    <!-- ==========================================================================
+         MODAL 3: ADICIONAR / EDITAR TRANSAÇÃO FINANCEIRA
+         ========================================================================== -->
+    <div id="transactionModal" class="modal-backdrop hidden">
+        <div class="modal-card modal-lg">
+            <button id="closeTransactionModalBtn" class="modal-close-btn">&times;</button>
+            
+            <div class="modal-header">
+                <div class="modal-icon green" id="txModalIcon">
+                    <i data-lucide="dollar-sign"></i>
+                </div>
+                <h2 id="txModalTitle">Nova Transação Financeira</h2>
+                <p>Cadastre uma entrada (receita) ou saída (despesa) no caixa da Rádio Grande FM</p>
             </div>
-            <div class="radio-text">
-                <span class="radio-title">Grande FM 94.5</span>
-                <span class="radio-slogan">Grande como você</span>
-            </div>
+
+            <form id="transactionForm" class="modal-form">
+                <input type="hidden" id="txId">
+
+                <div class="form-grid">
+                    <!-- Tipo de Lançamento -->
+                    <div class="input-group">
+                        <label for="txType">Tipo de Transação *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="arrow-up-down" class="input-icon"></i>
+                            <select id="txType" required>
+                                <option value="Receita">💚 ENTRADA (Receita / Patrocínio)</option>
+                                <option value="Despesa">🔴 SAÍDA (Despesa / Pagamento)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Valor -->
+                    <div class="input-group">
+                        <label for="txAmount">Valor (R$) *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="dollar-sign" class="input-icon"></i>
+                            <input type="number" id="txAmount" step="0.01" min="0.01" placeholder="0,00" required>
+                        </div>
+                    </div>
+
+                    <!-- Descrição -->
+                    <div class="input-group full-width">
+                        <label for="txDescription">Descrição do Lançamento *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="file-text" class="input-icon"></i>
+                            <input type="text" id="txDescription" placeholder="Ex: Cota de Patrocínio Comercial ou Fatura Energia Transmissor" required>
+                        </div>
+                    </div>
+
+                    <!-- Categoria -->
+                    <div class="input-group">
+                        <label for="txCategory">Categoria Financeira *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="tag" class="input-icon"></i>
+                            <select id="txCategory" required>
+                                <option value="Receita Comercial">Receita Comercial (Patrocínio / Mídia)</option>
+                                <option value="Folha de Pagamento">Folha de Pagamento (Salários / Pro-labore)</option>
+                                <option value="Energia & Transmissor">Energia & Transmissor FM</option>
+                                <option value="Impostos & Licenças">Impostos & Licenças (Anatel / ECAD)</option>
+                                <option value="Manutenção Técnica">Manutenção Técnica / Equipamentos</option>
+                                <option value="Comissões Vendas">Comissões de Vendas</option>
+                                <option value="Outros">Outros Lançamentos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Data Vencimento -->
+                    <div class="input-group">
+                        <label for="txDate">Data de Vencimento *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="calendar" class="input-icon"></i>
+                            <input type="date" id="txDate" required>
+                        </div>
+                    </div>
+
+                    <!-- Origem / Entidade -->
+                    <div class="input-group">
+                        <label for="txEntity">Origem / Cliente / Fornecedor</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="building" class="input-icon"></i>
+                            <input type="text" id="txEntity" placeholder="Ex: Supermercados Dourados ou Energisa MS">
+                        </div>
+                    </div>
+
+                    <!-- Forma de Pagamento -->
+                    <div class="input-group">
+                        <label for="txPaymentMethod">Forma de Pagamento</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="credit-card" class="input-icon"></i>
+                            <select id="txPaymentMethod">
+                                <option value="PIX / Transferência">PIX / Transferência</option>
+                                <option value="Boleto Bancário">Boleto Bancário</option>
+                                <option value="Depósito em Conta">Depósito em Conta</option>
+                                <option value="Débito Automático">Débito Automático</option>
+                                <option value="Cartão Corporativo">Cartão Corporativo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="input-group full-width">
+                        <label for="txStatus">Status do Pagamento *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="check-circle-2" class="input-icon"></i>
+                            <select id="txStatus" required>
+                                <option value="Pago">Pago / Quitado (Efetivado no Caixa)</option>
+                                <option value="Pendente">Pendente (A vencer)</option>
+                                <option value="Atrasado">Atrasado (Vencido)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="cancelTransactionBtn" class="secondary-btn">Cancelar</button>
+                    <button type="submit" class="submit-btn green-btn">
+                        <i data-lucide="save"></i>
+                        <span>Salvar Transação</span>
+                    </button>
+                </div>
+            </form>
         </div>
-        <button id="radioPlayBtn" class="radio-play-btn" aria-label="Ouvir Rádio Ao Vivo">
-            <i data-lucide="play" id="radioPlayIcon"></i>
-            <i data-lucide="pause" id="radioPauseIcon" class="hidden"></i>
-        </button>
+    </div>
+
+    <!-- Modal Cadastrar / Editar Usuário do Sistema -->
+    <div id="userModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <button id="closeUserModalBtn" class="modal-close-btn">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon blue">
+                    <i data-lucide="user-check"></i>
+                </div>
+                <h2 id="userModalTitle">Novo Operador do Sistema</h2>
+                <p id="userModalSubtitle">Cadastre um operador e atribua permissões de acesso ao portal Financeiro GFM.</p>
+            </div>
+
+            <form id="userForm" class="modal-form">
+                <input type="hidden" id="userId">
+
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label for="userName">Nome Completo *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="user" class="input-icon"></i>
+                            <input type="text" id="userName" placeholder="Ex: Juliana Prado" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="userEmail">E-mail Corporativo *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="mail" class="input-icon"></i>
+                            <input type="email" id="userEmail" placeholder="nome@grandefm.com.br" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="userRole">Papel / Permissões *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="shield" class="input-icon"></i>
+                            <select id="userRole" required>
+                                <option value="Administrador GFM">Administrador GFM (Acesso Total)</option>
+                                <option value="Gestor Financeiro">Gestor Financeiro (Caixa & DRE)</option>
+                                <option value="Diretor Comercial">Diretor Comercial (Contratos & Comissões)</option>
+                                <option value="Operador de Transmissão">Operador de Transmissão (Visualização)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="userStatus">Status *</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="check-circle" class="input-icon"></i>
+                            <select id="userStatus" required>
+                                <option value="Ativo">Ativo</option>
+                                <option value="Inativo">Inativo / Bloqueado</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="cancelUserBtn" class="secondary-btn">Cancelar</button>
+                    <button type="submit" class="submit-btn green-btn">
+                        <i data-lucide="save"></i>
+                        <span>Salvar Usuário</span>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Toast Notifications Container -->
