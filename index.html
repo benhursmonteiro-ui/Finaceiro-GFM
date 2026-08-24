@@ -233,48 +233,74 @@
                     <!-- SECTION 1: DASHBOARD -->
                     <section id="dashboardSection" class="content-section">
                         <!-- Metric Cards Row -->
-                        <div class="kpi-grid">
+                    <!-- SECTION 1: DASHBOARD PRINCIPAL COMPLETO -->
+                    <section id="dashboardSection" class="content-section">
+                        
+                        <!-- 6 Executive KPI Cards Grid -->
+                        <div class="kpi-grid kpi-grid-expanded">
                             <div class="kpi-card">
                                 <div class="kpi-icon blue">
                                     <i data-lucide="users"></i>
                                 </div>
                                 <div class="kpi-details">
-                                    <span class="kpi-label">Total de Colaboradores</span>
+                                    <span class="kpi-label">Equipe GFM</span>
                                     <h3 class="kpi-value" id="kpiCollaborators">0</h3>
-                                    <span class="kpi-subtext positive"><i data-lucide="trending-up"></i> +2 este mês</span>
+                                    <span class="kpi-subtext positive"><i data-lucide="trending-up"></i> Integrantes Ativos</span>
                                 </div>
                             </div>
 
                             <div class="kpi-card">
-                                <div class="kpi-icon green">
+                                <div class="kpi-icon red">
                                     <i data-lucide="wallet"></i>
                                 </div>
                                 <div class="kpi-details">
                                     <span class="kpi-label">Folha Salarial Mensal</span>
                                     <h3 class="kpi-value" id="kpiPayroll">R$ 0,00</h3>
-                                    <span class="kpi-subtext">Total de salários ativos</span>
+                                    <span class="kpi-subtext">Custo com Pessoal</span>
                                 </div>
                             </div>
 
                             <div class="kpi-card">
                                 <div class="kpi-icon gold">
-                                    <i data-lucide="pie-chart"></i>
+                                    <i data-lucide="briefcase"></i>
+                                </div>
+                                <div class="kpi-details">
+                                    <span class="kpi-label">Clientes & Anunciantes</span>
+                                    <h3 class="kpi-value" id="kpiClientsCount">0</h3>
+                                    <span class="kpi-subtext positive"><i data-lucide="trending-up"></i> Patrocinadores 94.5 FM</span>
+                                </div>
+                            </div>
+
+                            <div class="kpi-card">
+                                <div class="kpi-icon green">
+                                    <i data-lucide="trending-up"></i>
                                 </div>
                                 <div class="kpi-details">
                                     <span class="kpi-label">Receita Comercial (Mês)</span>
                                     <h3 class="kpi-value" id="kpiClientRevenue">R$ 0,00</h3>
-                                    <span class="kpi-subtext positive"><i data-lucide="trending-up"></i> Contratos Ativos GFM</span>
+                                    <span class="kpi-subtext positive">Contratos Ativos GFM</span>
+                                </div>
+                            </div>
+
+                            <div class="kpi-card">
+                                <div class="kpi-icon cyan">
+                                    <i data-lucide="dollar-sign"></i>
+                                </div>
+                                <div class="kpi-details">
+                                    <span class="kpi-label">Resultado Líquido (EBITDA)</span>
+                                    <h3 class="kpi-value" id="kpiNetProfit">R$ 0,00</h3>
+                                    <span class="kpi-subtext positive" id="kpiProfitMargin">Margem: 0%</span>
                                 </div>
                             </div>
 
                             <div class="kpi-card">
                                 <div class="kpi-icon purple">
-                                    <i data-lucide="building-2"></i>
+                                    <i data-lucide="award"></i>
                                 </div>
                                 <div class="kpi-details">
-                                    <span class="kpi-label">Clientes & Anunciantes</span>
-                                    <h3 class="kpi-value" id="kpiClientsCount">0</h3>
-                                    <span class="kpi-subtext">Patrocinadores 94.5 FM</span>
+                                    <span class="kpi-label">Comissões de Vendas</span>
+                                    <h3 class="kpi-value" id="kpiCommissions">R$ 0,00</h3>
+                                    <span class="kpi-subtext">Equipe de Vendas GFM</span>
                                 </div>
                             </div>
                         </div>
@@ -282,41 +308,72 @@
                         <!-- Quick Actions Banner -->
                         <div class="banner-card">
                             <div class="banner-content">
-                                <h2>Gestão de Equipe & Anunciantes Grande FM</h2>
-                                <p>Gerencie contratações, funções, dados cadastrais e contratos de mídia comercial da emissora.</p>
+                                <h2>Central de Controle & Operações Grande FM 94.5</h2>
+                                <p>Gerencie finanças, contratos de mídia comercial, equipe de comunicação e transmissões.</p>
                             </div>
                             <div class="banner-btn-group">
-                                <button id="quickAddCollaboratorBtn" class="primary-action-btn">
-                                    <i data-lucide="user-plus"></i>
-                                    <span>Adicionar Colaborador</span>
+                                <button id="quickNewIncomeBtn" class="action-btn green-btn">
+                                    <i data-lucide="plus-circle"></i>
+                                    <span>+ Entrada</span>
                                 </button>
-                                <button id="quickAddClientBtn" class="primary-action-btn gold-btn">
+                                <button id="quickNewExpenseBtn" class="action-btn red-btn">
+                                    <i data-lucide="minus-circle"></i>
+                                    <span>- Saída</span>
+                                </button>
+                                <button id="quickAddCollaboratorBtn" class="action-btn secondary">
+                                    <i data-lucide="user-plus"></i>
+                                    <span>+ Colaborador</span>
+                                </button>
+                                <button id="quickAddClientBtn" class="action-btn secondary">
                                     <i data-lucide="briefcase"></i>
-                                    <span>Adicionar Cliente</span>
+                                    <span>+ Cliente</span>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Dashboard Charts & Lists Row -->
-                        <div class="dashboard-grid">
-                            <!-- Department Salary Distribution -->
+                        <!-- 4-Panel Executive Dashboard Grid -->
+                        <div class="dashboard-grid-4">
+                            
+                            <!-- Panel 1: Próximos Vencimentos (Cobranças & Contas) -->
                             <div class="panel-card">
                                 <div class="panel-header">
-                                    <h3>Custo de Folha por Departamento</h3>
-                                    <i data-lucide="layers" class="panel-icon"></i>
+                                    <h3>Próximos Vencimentos de Contas</h3>
+                                    <i data-lucide="calendar-clock" class="panel-icon blue"></i>
+                                </div>
+                                <div class="upcoming-payments-list" id="dashboardUpcomingPaymentsList">
+                                    <!-- Populated via JS -->
+                                </div>
+                            </div>
+
+                            <!-- Panel 2: Ranking Comercial dos Executivos -->
+                            <div class="panel-card">
+                                <div class="panel-header">
+                                    <h3>Ranking Comercial dos Executivos</h3>
+                                    <i data-lucide="award" class="panel-icon gold"></i>
+                                </div>
+                                <div class="sales-ranking-list" id="dashboardSalesRankingList">
+                                    <!-- Populated via JS -->
+                                </div>
+                            </div>
+
+                            <!-- Panel 3: Custo de Folha por Departamento -->
+                            <div class="panel-card">
+                                <div class="panel-header">
+                                    <h3>Custo de Folha por Setor</h3>
+                                    <i data-lucide="layers" class="panel-icon cyan"></i>
                                 </div>
                                 <div class="dept-distribution-list" id="deptDistributionList">
                                     <!-- Populated via JS -->
                                 </div>
                             </div>
 
-                            <!-- Recent System Activities -->
+                            <!-- Panel 4: Atividades Recentes do Sistema -->
                             <div class="panel-card">
                                 <div class="panel-header">
                                     <h3>Atividades Recentes do Sistema</h3>
-                                    <i data-lucide="activity" class="panel-icon"></i>
+                                    <i data-lucide="activity" class="panel-icon green"></i>
                                 </div>
-                                <div class="activity-feed">
+                                <div class="activity-feed" id="dashboardActivityFeed">
                                     <div class="activity-item">
                                         <div class="activity-icon blue"><i data-lucide="user-check"></i></div>
                                         <div class="activity-text">
@@ -343,7 +400,9 @@
                                     </div>
                                 </div>
                             </div>
+
                         </div>
+                    </section>
                     </section>
 
                     <!-- SECTION 2: AREA DE COLABORADORES -->

@@ -563,71 +563,143 @@ document.addEventListener('DOMContentLoaded', () => {
         return JSON.parse(localStorage.getItem('gfm_clients')) || INITIAL_CLIENTS;
     }
 
+    // Wire Dashboard Quick Action Buttons
+    const quickNewIncomeBtn = document.getElementById('quickNewIncomeBtn');
+    const quickNewExpenseBtn = document.getElementById('quickNewExpenseBtn');
+
+    if (quickNewIncomeBtn) {
+        quickNewIncomeBtn.addEventListener('click', () => {
+            if (typeof openTransactionModal === 'function') openTransactionModal(null, 'Receita');
+        });
+    }
+
+    if (quickNewExpenseBtn) {
+        quickNewExpenseBtn.addEventListener('click', () => {
+            if (typeof openTransactionModal === 'function') openTransactionModal(null, 'Despesa');
+        });
+    }
+
     // Load Dashboard Metrics
     async function loadDashboard() {
-        const stats = await apiFetch('/dashboard/stats');
+        const overview = await apiFetch('/dashboard/overview');
         
-        let collabs = [];
-        let clients = [];
+        if (overview && overview.kpis) {
+            const kpis = overview.kpis;
+            if (kpiCollaborators) kpiCollaborators.textContent = kpis.collaboratorsCount;
+            if (kpiPayroll) kpiPayroll.textContent = formatCurrency(kpis.monthlyPayroll);
+            if (kpiClientsCount) kpiClientsCount.textContent = kpis.clientsCount;
+            if (kpiClientRevenue) kpiClientRevenue.textContent = formatCurrency(kpis.clientRevenue);
+            
+            const kpiNetProfitEl = document.getElementById('kpiNetProfit');
+            if (kpiNetProfitEl) kpiNetProfitEl.textContent = formatCurrency(kpis.netProfit);
 
-        if (stats) {
-            kpiCollaborators.textContent = stats.activeCollaborators;
-            kpiPayroll.textContent = formatCurrency(stats.totalPayroll);
-            kpiClientRevenue.textContent = formatCurrency(stats.totalClientRevenue);
-            kpiClientsCount.textContent = stats.totalClients;
-            sidebarCollaboratorsCount.textContent = stats.totalCollaborators;
-            sidebarClientsCount.textContent = stats.totalClients;
-            kpiDepartments.textContent = stats.departmentsCount;
+            const kpiProfitMarginEl = document.getElementById('kpiProfitMargin');
+            if (kpiProfitMarginEl) kpiProfitMarginEl.textContent = `Margem: ${kpis.profitMargin}%`;
 
-            // Render Dept Bars from API
-            deptDistributionList.innerHTML = '';
-            const maxDeptSalary = Math.max(...Object.values(stats.deptTotals), 1);
-            Object.keys(stats.deptTotals).forEach(deptName => {
-                const amount = stats.deptTotals[deptName];
-                const pct = Math.round((amount / maxDeptSalary) * 100);
-                const barItem = document.createElement('div');
-                barItem.className = 'dept-bar-item';
-                barItem.innerHTML = `
-                    <div class="dept-bar-label">
-                        <span>${deptName}</span>
-                        <span>${formatCurrency(amount)}</span>
-                    </div>
-                    <div class="dept-bar-track">
-                        <div class="dept-bar-fill" style="width: ${pct}%"></div>
-                    </div>
-                `;
-                deptDistributionList.appendChild(barItem);
-            });
+            const kpiCommissionsEl = document.getElementById('kpiCommissions');
+            if (kpiCommissionsEl) kpiCommissionsEl.textContent = formatCurrency(kpis.totalCommissions);
+
+            if (sidebarCollaboratorsCount) sidebarCollaboratorsCount.textContent = kpis.collaboratorsCount;
+            if (sidebarClientsCount) sidebarClientsCount.textContent = kpis.clientsCount;
+
+            // Render Dept Distribution
+            if (deptDistributionList && overview.deptTotals) {
+                deptDistributionList.innerHTML = '';
+                const maxDeptSalary = Math.max(...Object.values(overview.deptTotals), 1);
+                Object.keys(overview.deptTotals).forEach(deptName => {
+                    const amount = overview.deptTotals[deptName];
+                    const pct = Math.round((amount / maxDeptSalary) * 100);
+                    const barItem = document.createElement('div');
+                    barItem.className = 'dept-bar-item';
+                    barItem.innerHTML = `
+                        <div class="dept-bar-label">
+                            <span>${deptName}</span>
+                            <span>${formatCurrency(amount)}</span>
+                        </div>
+                        <div class="dept-bar-track">
+                            <div class="dept-bar-fill" style="width: ${pct}%"></div>
+                        </div>
+                    `;
+                    deptDistributionList.appendChild(barItem);
+                });
+            }
+
+            // Render Upcoming Payments
+            const upcomingList = document.getElementById('dashboardUpcomingPaymentsList');
+            if (upcomingList && overview.upcomingPayments) {
+                upcomingList.innerHTML = '';
+                if (overview.upcomingPayments.length === 0) {
+                    upcomingList.innerHTML = `<div class="text-center text-muted" style="padding: 1.5rem;">Nenhum vencimento pendente.</div>`;
+                } else {
+                    overview.upcomingPayments.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'upcoming-item';
+                        div.innerHTML = `
+                            <div class="upcoming-info">
+                                <span class="upcoming-title">${item.description}</span>
+                                <span class="upcoming-date"><i data-lucide="calendar"></i> Vence: ${formatDate(item.date)}</span>
+                            </div>
+                            <div class="upcoming-value-col">
+                                <span class="upcoming-amount ${item.type === 'Receita' ? 'receita' : 'despesa'}">${item.type === 'Receita' ? '+' : '-'} ${formatCurrency(item.amount)}</span>
+                                <button class="action-btn-sm pay-btn quick-pay-dash-btn" data-id="${item.id}" title="Quitar Lançamento">
+                                    <i data-lucide="check"></i>
+                                    <span>Baixa</span>
+                                </button>
+                            </div>
+                        `;
+                        upcomingList.appendChild(div);
+                    });
+
+                    // Quick pay event listeners in dashboard
+                    upcomingList.querySelectorAll('.quick-pay-dash-btn').forEach(btn => {
+                        btn.addEventListener('click', async () => {
+                            const id = btn.getAttribute('data-id');
+                            const txs = await getTransactions();
+                            const target = txs.find(t => t.id === id);
+                            if (target) {
+                                target.status = 'Pago';
+                                await saveTransaction(target);
+                                showToast('Lançamento quitado com sucesso!', 'success');
+                                loadDashboard();
+                            }
+                        });
+                    });
+                }
+            }
+
+            // Render Sales Ranking
+            const rankingList = document.getElementById('dashboardSalesRankingList');
+            if (rankingList && overview.salesRanking) {
+                rankingList.innerHTML = '';
+                if (overview.salesRanking.length === 0) {
+                    rankingList.innerHTML = `<div class="text-center text-muted" style="padding: 1.5rem;">Nenhum contrato ativo sob gestão.</div>`;
+                } else {
+                    overview.salesRanking.forEach((exec, idx) => {
+                        const div = document.createElement('div');
+                        div.className = 'rank-item';
+                        div.innerHTML = `
+                            <div class="rank-user-info">
+                                <span class="rank-badge">#${idx + 1}</span>
+                                <img src="${exec.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'}" alt="${exec.name}" class="rank-avatar">
+                                <div class="rank-details">
+                                    <span class="rank-name">${exec.name}</span>
+                                    <span class="rank-contracts">${exec.totalContracts} contrato(s) comercial(is)</span>
+                                </div>
+                            </div>
+                            <div class="rank-values">
+                                <span class="rank-revenue">${formatCurrency(exec.totalValue)}</span>
+                                <span class="rank-comm">Comissão: ${formatCurrency(exec.totalCommission)}</span>
+                            </div>
+                        `;
+                        rankingList.appendChild(div);
+                    });
+                }
+            }
+
+            refreshIcons();
             return;
         }
-
-        // Fallback calculations if API is offline
-        collabs = await getCollaborators();
-        clients = await getClients();
-
-        kpiCollaborators.textContent = collabs.filter(c => c.status === 'Ativo' || c.status === 'Férias').length;
-        sidebarCollaboratorsCount.textContent = collabs.length;
-
-        const totalPayroll = collabs.reduce((acc, c) => c.status !== 'Inativo' ? acc + parseFloat(c.salary || 0) : acc, 0);
-        kpiPayroll.textContent = formatCurrency(totalPayroll);
-
-        const activeClients = clients.filter(c => c.status === 'Ativo');
-        const totalClientRevenue = activeClients.reduce((acc, c) => acc + parseFloat(c.value || 0), 0);
-        kpiClientRevenue.textContent = formatCurrency(totalClientRevenue);
-        kpiClientsCount.textContent = clients.length;
-        sidebarClientsCount.textContent = clients.length;
-
-        deptDistributionList.innerHTML = '';
-        const deptTotals = {};
-        collabs.forEach(c => {
-            if (c.status !== 'Inativo') {
-                deptTotals[c.dept] = (deptTotals[c.dept] || 0) + parseFloat(c.salary || 0);
-            }
-        });
-
-        const maxDeptSalary = Math.max(...Object.values(deptTotals), 1);
-        Object.keys(deptTotals).forEach(deptName => {
-            const amount = deptTotals[deptName];
+    }
             const pct = Math.round((amount / maxDeptSalary) * 100);
             const barItem = document.createElement('div');
             barItem.className = 'dept-bar-item';

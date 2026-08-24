@@ -458,16 +458,89 @@ app.get('/api/financial/summary', (req, res) => {
         }
     });
 
+// GET /api/dashboard/overview (Consolidated Executive Dashboard Data)
+app.get('/api/dashboard/overview', (req, res) => {
+    const db = readDb();
+    const collabs = db.collaborators || [];
+    const clients = db.clients || [];
+    const txs = db.transactions || [];
+
+    // KPI 1: Collaborators & Payroll
+    const activeCollabs = collabs.filter(c => c.status === 'Ativo');
+    const monthlyPayroll = activeCollabs.reduce((sum, c) => sum + (parseFloat(c.salary) || 0), 0);
+
+    // KPI 2: Active Clients & Commercial Revenue
+    const activeClients = clients.filter(c => c.status === 'Ativo');
+    const clientRevenue = activeClients.reduce((sum, c) => sum + (parseFloat(c.contractValue) || 0), 0);
+
+    // KPI 3: Financial Cashflow Totals
+    let totalReceitas = 0;
+    let totalDespesas = 0;
+    txs.forEach(t => {
+        const val = parseFloat(t.amount) || 0;
+        if (t.type === 'Receita') totalReceitas += val;
+        else if (t.type === 'Despesa') totalDespesas += val;
+    });
+    const netProfit = totalReceitas - totalDespesas;
+    const profitMargin = totalReceitas > 0 ? ((netProfit / totalReceitas) * 100).toFixed(1) : '0.0';
+
+    // KPI 4: Commissions
+    let totalCommissions = 0;
+    const commissionsByExec = {};
+    activeClients.forEach(c => {
+        const execs = c.executives || [{ executive: c.executive || '02', commission: parseFloat(c.commissionRate) || 10.0 }];
+        const clientVal = parseFloat(c.contractValue) || 0;
+        execs.forEach(e => {
+            const rate = parseFloat(e.commission) || 10.0;
+            const commVal = (clientVal * rate) / 100;
+            totalCommissions += commVal;
+
+            const execCode = e.executive || '02';
+            if (!commissionsByExec[execCode]) {
+                const found = collabs.find(col => col.code === execCode);
+                commissionsByExec[execCode] = {
+                    code: execCode,
+                    name: found ? found.name : `Executivo ${execCode}`,
+                    avatar: found ? found.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+                    totalContracts: 0,
+                    totalValue: 0,
+                    totalCommission: 0
+                };
+            }
+            commissionsByExec[execCode].totalContracts += 1;
+            commissionsByExec[execCode].totalValue += clientVal;
+            commissionsByExec[execCode].totalCommission += commVal;
+        });
+    });
+
+    // Department Payroll Distribution
+    const deptTotals = {};
+    activeCollabs.forEach(c => {
+        const dept = c.department || 'Outros';
+        deptTotals[dept] = (deptTotals[dept] || 0) + (parseFloat(c.salary) || 0);
+    });
+
+    // Upcoming Payments (Pending Transactions)
+    const upcomingPayments = txs
+        .filter(t => t.status === 'Pendente' || t.status === 'Atrasado')
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .slice(0, 5);
+
     res.json({
-        totalReceitas,
-        totalReceitasPagas,
-        totalDespesas,
-        totalDespesasPagas,
-        resultadoLiquido,
-        resultadoCaixaEfetivado,
-        totalCommissions,
-        commissionsByExec: Object.values(commissionsByExec),
-        totalTransactionsCount: txs.length
+        kpis: {
+            collaboratorsCount: activeCollabs.length,
+            monthlyPayroll,
+            clientsCount: activeClients.length,
+            clientRevenue,
+            totalReceitas,
+            totalDespesas,
+            netProfit,
+            profitMargin,
+            totalCommissions
+        },
+        deptTotals,
+        upcomingPayments,
+        salesRanking: Object.values(commissionsByExec).sort((a, b) => b.totalValue - a.totalValue)
     });
 });
 
