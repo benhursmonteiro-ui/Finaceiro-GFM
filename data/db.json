@@ -1,19 +1,6 @@
 {
   "collaborators": [
     {
-      "id": "1786660593059",
-      "code": "07",
-      "name": "Benhur",
-      "email": "benhur.s.monteiro@gmail.com",
-      "cpf": "10668917377",
-      "role": "Programador",
-      "dept": "Programação",
-      "salary": 4500,
-      "hireDate": "2026-08-14",
-      "status": "Ativo",
-      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-    },
-    {
       "id": "1",
       "code": "01",
       "name": "Carlos Eduardo Oliveira",
@@ -21,7 +8,7 @@
       "cpf": "123.456.789-00",
       "role": "Locutor Principal / Apresentador",
       "dept": "Programação",
-      "salary": 6800,
+      "salary": 7000,
       "hireDate": "2021-03-15",
       "status": "Ativo",
       "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
@@ -104,7 +91,10 @@
       "executive": "02",
       "commission": 10,
       "executives": [
-        { "executive": "02", "commission": 10 }
+        {
+          "executive": "02",
+          "commission": 10
+        }
       ],
       "startDate": "2025-02-01",
       "endDate": "2027-02-01",
@@ -122,8 +112,14 @@
       "executive": "02",
       "commission": 8.5,
       "executives": [
-        { "executive": "02", "commission": 8.5 },
-        { "executive": "06", "commission": 4 }
+        {
+          "executive": "02",
+          "commission": 8.5
+        },
+        {
+          "executive": "06",
+          "commission": 4
+        }
       ],
       "startDate": "2025-01-15",
       "endDate": "2026-12-31",
@@ -141,7 +137,10 @@
       "executive": "01",
       "commission": 12,
       "executives": [
-        { "executive": "01", "commission": 12 }
+        {
+          "executive": "01",
+          "commission": 12
+        }
       ],
       "startDate": "2025-06-01",
       "endDate": "2027-06-30",
@@ -159,13 +158,590 @@
       "executive": "02",
       "commission": 5,
       "executives": [
-        { "executive": "02", "commission": 5 },
-        { "executive": "01", "commission": 3 }
+        {
+          "executive": "02",
+          "commission": 5
+        },
+        {
+          "executive": "01",
+          "commission": 3
+        }
       ],
       "startDate": "2026-03-01",
       "endDate": "2026-09-10",
       "status": "Ativo",
       "logo": "https://images.unsplash.com/photo-1511578314322-379afb476865?w=100&auto=format&fit=crop&q=80"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "t_inst_1791547010324_25",
+      "date": "2027-02-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Fevereiro/2027)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 25
+    },
+    {
+      "id": "t_inst_1791547010324_24",
+      "date": "2027-01-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Janeiro/2027)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 24
+    },
+    {
+      "id": "t_inst_1791547010323_23",
+      "date": "2026-12-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Dezembro/2026)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 23
+    },
+    {
+      "id": "t_inst_1791547010323_22",
+      "date": "2026-11-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Novembro/2026)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 22
+    },
+    {
+      "id": "t_inst_1791547010323_21",
+      "date": "2026-10-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Outubro/2026)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 21
+    },
+    {
+      "id": "t_inst_1791547010323_20",
+      "date": "2026-09-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Setembro/2026)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 20
+    },
+    {
+      "id": "t_inst_1791547010323_19",
+      "date": "2026-08-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Agosto/2026)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 19
+    },
+    {
+      "id": "t_inst_1791547010323_18",
+      "date": "2026-07-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Julho/2026)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 18
+    },
+    {
+      "id": "t_inst_1791547010323_17",
+      "date": "2026-06-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Junho/2026)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 17
+    },
+    {
+      "id": "t_inst_1791547010323_16",
+      "date": "2026-05-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Maio/2026)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 16
+    },
+    {
+      "id": "t_inst_1791547010323_15",
+      "date": "2026-04-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Abril/2026)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 15
+    },
+    {
+      "id": "t_inst_1791547010323_14",
+      "date": "2026-03-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Março/2026)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 14
+    },
+    {
+      "id": "t_inst_1791547010323_13",
+      "date": "2026-02-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Fevereiro/2026)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 13
+    },
+    {
+      "id": "t_inst_1791547010323_12",
+      "date": "2026-01-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Janeiro/2026)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 12
+    },
+    {
+      "id": "t_inst_1791547010323_11",
+      "date": "2025-12-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Dezembro/2025)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 11
+    },
+    {
+      "id": "t_inst_1791547010323_10",
+      "date": "2025-11-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Novembro/2025)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 10
+    },
+    {
+      "id": "t_inst_1791547010323_9",
+      "date": "2025-10-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Outubro/2025)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 9
+    },
+    {
+      "id": "t_inst_1791547010323_8",
+      "date": "2025-09-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Setembro/2025)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 8
+    },
+    {
+      "id": "t_inst_1791547010323_7",
+      "date": "2025-08-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Agosto/2025)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 7
+    },
+    {
+      "id": "t_inst_1791547010323_6",
+      "date": "2025-07-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Julho/2025)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 6
+    },
+    {
+      "id": "t_inst_1791547010323_5",
+      "date": "2025-06-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Junho/2025)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 5
+    },
+    {
+      "id": "t_inst_1791547010323_4",
+      "date": "2025-05-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Maio/2025)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 4
+    },
+    {
+      "id": "t_inst_1791547010323_3",
+      "date": "2025-04-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Abril/2025)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 3
+    },
+    {
+      "id": "t_inst_1791547010323_2",
+      "date": "2025-03-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Março/2025)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 2
+    },
+    {
+      "id": "t_inst_1791547010322_1",
+      "date": "2025-02-10",
+      "description": "Mensalidade Publicitária - Supermercados Dourados Ltda (Fevereiro/2025)",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário / PIX",
+      "entity": "Supermercados Dourados Ltda",
+      "clientId": "c1",
+      "installment": 1
+    },
+    {
+      "id": "t1",
+      "date": "2026-08-05",
+      "description": "Mensalidade Patrocínio Master - Supermercados Dourados",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 12500,
+      "status": "Pago",
+      "paymentMethod": "PIX / Transferência",
+      "entity": "Supermercados Dourados Ltda"
+    },
+    {
+      "id": "t2",
+      "date": "2026-08-10",
+      "description": "Cota de Patrocínio Comercial - AutoVale Dourados",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 18000,
+      "status": "Pago",
+      "paymentMethod": "Boleto Bancário",
+      "entity": "Concessionária AutoVale Dourados"
+    },
+    {
+      "id": "t3",
+      "date": "2026-08-12",
+      "description": "Contrato Publicidade Trimestral - Agência Criativa",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 25000,
+      "status": "Pago",
+      "paymentMethod": "Transferência Bancária",
+      "entity": "Agência Criativa Mídia Brasil"
+    },
+    {
+      "id": "t4",
+      "date": "2026-08-15",
+      "description": "Cota Especial Arena - ExpoAgro Dourados 2026",
+      "type": "Receita",
+      "category": "Receita Comercial",
+      "amount": 45000,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário",
+      "entity": "ExpoAgro Dourados 2026"
+    },
+    {
+      "id": "t5",
+      "date": "2026-08-05",
+      "description": "Folha de Pagamento - Carlos Eduardo Oliveira",
+      "type": "Despesa",
+      "category": "Folha de Pagamento",
+      "amount": 6800,
+      "status": "Pago",
+      "paymentMethod": "Depósito em Conta",
+      "entity": "Carlos Eduardo Oliveira"
+    },
+    {
+      "id": "t6",
+      "date": "2026-08-05",
+      "description": "Folha de Pagamento - Mariana Alves Prado",
+      "type": "Despesa",
+      "category": "Folha de Pagamento",
+      "amount": 8500,
+      "status": "Pago",
+      "paymentMethod": "Depósito em Conta",
+      "entity": "Mariana Alves Prado"
+    },
+    {
+      "id": "t7",
+      "date": "2026-08-05",
+      "description": "Folha de Pagamento - Roberto Santos Silva",
+      "type": "Despesa",
+      "category": "Folha de Pagamento",
+      "amount": 5400,
+      "status": "Pago",
+      "paymentMethod": "Depósito em Conta",
+      "entity": "Roberto Santos Silva"
+    },
+    {
+      "id": "t8",
+      "date": "2026-08-05",
+      "description": "Folha de Pagamento - Fernanda Lima Castro",
+      "type": "Despesa",
+      "category": "Folha de Pagamento",
+      "amount": 4900,
+      "status": "Pago",
+      "paymentMethod": "Depósito em Conta",
+      "entity": "Fernanda Lima Castro"
+    },
+    {
+      "id": "t9",
+      "date": "2026-08-05",
+      "description": "Folha de Pagamento - Lucas Mendes Rocha",
+      "type": "Despesa",
+      "category": "Folha de Pagamento",
+      "amount": 3800,
+      "status": "Pago",
+      "paymentMethod": "Depósito em Conta",
+      "entity": "Lucas Mendes Rocha"
+    },
+    {
+      "id": "t10",
+      "date": "2026-08-05",
+      "description": "Folha de Pagamento - Juliana Prado Ribeiro",
+      "type": "Despesa",
+      "category": "Folha de Pagamento",
+      "amount": 5600,
+      "status": "Pago",
+      "paymentMethod": "Depósito em Conta",
+      "entity": "Juliana Prado Ribeiro"
+    },
+    {
+      "id": "t11",
+      "date": "2026-08-10",
+      "description": "Energia Elétrica Parque Transmissor FM (Energisa)",
+      "type": "Despesa",
+      "category": "Energia & Transmissor",
+      "amount": 14200,
+      "status": "Pago",
+      "paymentMethod": "Débito Automático",
+      "entity": "Energisa MS"
+    },
+    {
+      "id": "t12",
+      "date": "2026-08-18",
+      "description": "Licença Direitos Autorais Execução Musical (ECAD)",
+      "type": "Despesa",
+      "category": "Impostos & Licenças",
+      "amount": 4200,
+      "status": "Pago",
+      "paymentMethod": "Boleto Bancário",
+      "entity": "ECAD Nacional"
+    },
+    {
+      "id": "t13",
+      "date": "2026-08-20",
+      "description": "Taxa FISTEL / outorga Anatel 94.5 FM",
+      "type": "Despesa",
+      "category": "Impostos & Licenças",
+      "amount": 2850,
+      "status": "Pago",
+      "paymentMethod": "GRU Anatel",
+      "entity": "Anatel Minist. Comunicações"
+    },
+    {
+      "id": "t14",
+      "date": "2026-08-25",
+      "description": "Manutenção Preventiva Módulo Potência Transmissor",
+      "type": "Despesa",
+      "category": "Manutenção Técnica",
+      "amount": 3500,
+      "status": "Pendente",
+      "paymentMethod": "Boleto Bancário",
+      "entity": "Telecom Engenharia"
+    },
+    {
+      "id": "t15",
+      "date": "2026-08-28",
+      "description": "Comissões Vendas Comerciais - Mariana Alves (Ref. Jul/Ago)",
+      "type": "Despesa",
+      "category": "Comissões Vendas",
+      "amount": 5030,
+      "status": "Pendente",
+      "paymentMethod": "Transferência Bancária",
+      "entity": "Mariana Alves Prado"
+    }
+  ],
+  "settings": {
+    "companyName": "Rádio Grande FM Ltda",
+    "tradeName": "Rádio Grande FM 94.5",
+    "cnpj": "03.882.114/0001-92",
+    "frequency": "94.5 MHz",
+    "power": "10 kW",
+    "city": "Dourados",
+    "state": "MS",
+    "address": "Av. Marcelino Pires, 1400 - Centro, Dourados - MS",
+    "email": "financeiro@grandefm.com.br",
+    "phone": "(67) 3411-9450",
+    "pixKey": "03.882.114/0001-92",
+    "pixKeyType": "CNPJ",
+    "bankName": "Banco do Brasil S.A.",
+    "agency": "0084-5",
+    "account": "19450-8",
+    "defaultCommission": 10,
+    "invoiceDueDay": 10,
+    "estimatedTaxRate": 5,
+    "sessionTimeout": "30m",
+    "sslEnabled": true,
+    "emailNotifications": true,
+    "overdueAlerts": true,
+    "defaultTheme": "dark"
+  },
+  "users": [
+    {
+      "id": "u1",
+      "name": "Administrador GFM",
+      "email": "admin@grandefm.com.br",
+      "role": "Administrador GFM",
+      "status": "Ativo",
+      "lastAccess": "2026-08-23 21:44",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "u2",
+      "name": "Juliana Prado Ribeiro",
+      "email": "juliana.prado@grandefm.com.br",
+      "role": "Gestor Financeiro",
+      "status": "Ativo",
+      "lastAccess": "2026-08-23 18:20",
+      "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "u3",
+      "name": "Mariana Alves Prado",
+      "email": "mariana.alves@grandefm.com.br",
+      "role": "Diretor Comercial",
+      "status": "Ativo",
+      "lastAccess": "2026-08-22 11:15",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "u4",
+      "name": "Roberto Santos Silva",
+      "email": "roberto.santos@grandefm.com.br",
+      "role": "Operador de Transmissão",
+      "status": "Ativo",
+      "lastAccess": "2026-08-21 09:30",
+      "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "log_1791547010341",
+      "timestamp": "2026-10-09T11:56:50.341Z",
+      "action": "PARCELAS_GERADAS",
+      "details": "Geradas 25 parcelas recorrentes para \"Supermercados Dourados Ltda\".",
+      "user": "Admin GFM"
+    },
+    {
+      "id": "log_init",
+      "timestamp": "2026-10-09T11:48:43.151Z",
+      "action": "SISTEMA",
+      "details": "Sistema Financeiro GFM v2.5 inicializado com sucesso",
+      "user": "Sistema"
     }
   ]
 }

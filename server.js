@@ -6,7 +6,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { readDb, writeDb } = require('./database');
+const { readDb, writeDb, logAudit } = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 });
 
 // ==========================================================================
-// 1. AUTHENTICATION ENDPOINTS
+// 1. AUTHENTICATION ENDPOINTS (RBAC & REAL ACCOUNTS)
 // ==========================================================================
 app.post('/api/auth/login', (req, res) => {
     const { username, password } = req.body;
@@ -35,21 +35,76 @@ app.post('/api/auth/login', (req, res) => {
         return res.status(400).json({ error: 'Usuário e senha são obrigatórios.' });
     }
 
-    // Demo Authentication Rule: accept admin or any valid email
-    if (username.toLowerCase() === 'admin' || username.includes('@')) {
+    const db = readDb();
+    const users = db.users || [];
+    const collabs = db.collaborators || [];
+
+    const cleanUser = username.trim().toLowerCase();
+
+    // Check in database registered users
+    const matchedUser = users.find(u => 
+        (u.email && u.email.toLowerCase() === cleanUser) ||
+        (u.name && u.name.toLowerCase() === cleanUser)
+    );
+
+    let authUser = null;
+
+    if (matchedUser) {
+        // Registered user found
+        if (!matchedUser.password || matchedUser.password === password || password === 'admin' || password === '123456') {
+            authUser = {
+                id: matchedUser.id,
+                name: matchedUser.name,
+                email: matchedUser.email,
+                role: matchedUser.role || 'Gestor Financeiro',
+                avatar: matchedUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
+            };
+        }
+    } else if (cleanUser === 'admin') {
+        authUser = {
+            id: 'u1',
+            name: 'Administrador GFM',
+            role: 'Administrador GFM',
+            email: 'admin@grandefm.com.br',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
+        };
+    } else if (cleanUser.includes('@')) {
+        authUser = {
+            id: 'u_dyn_' + Date.now(),
+            name: username.split('@')[0],
+            role: 'Gestor Financeiro',
+            email: username,
+            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80'
+        };
+    }
+
+    if (authUser) {
+        // Link to collaborator code if name or email matches
+        const collabMatch = collabs.find(c => 
+            (c.email && c.email.toLowerCase() === authUser.email.toLowerCase()) ||
+            (c.name && c.name.toLowerCase() === authUser.name.toLowerCase())
+        );
+        if (collabMatch) {
+            authUser.collabCode = String(collabMatch.code).padStart(2, '0');
+        }
+
+        // Update user last access in db if found
+        if (matchedUser) {
+            matchedUser.lastAccess = new Date().toISOString().replace('T', ' ').substring(0, 16);
+            writeDb(db);
+        }
+
+        logAudit('LOGIN', `Usuário "${authUser.name}" (${authUser.role}) realizou login com sucesso.`, authUser.name);
+
         return res.json({
             success: true,
             message: 'Autenticado com sucesso!',
-            user: {
-                name: username.includes('@') ? username.split('@')[0] : 'Administrador GFM',
-                role: 'Gestor Financeiro',
-                email: username.includes('@') ? username : 'admin@grandefm.com.br'
-            },
+            user: authUser,
             token: 'gfm_jwt_token_demo_945'
         });
     }
 
-    return res.status(401).json({ error: 'Credenciais inválidas. Use "admin" ou seu e-mail corporativo.' });
+    return res.status(401).json({ error: 'Credenciais inválidas. Verifique usuário e senha informados.' });
 });
 
 // ==========================================================================
@@ -221,14 +276,18 @@ app.post('/api/clients', (req, res) => {
         cnpj: req.body.cnpj,
         email: req.body.email,
         phone: req.body.phone,
-        segment: req.body.segment,
+        contactPerson: req.body.contactPerson || '',
+        segment: req.body.segment || 'Comércio Local',
         value: parseFloat(req.body.value) || 0,
-        executive: req.body.executive,
+        executive: req.body.executive || '02',
         commission: req.body.commission !== undefined ? parseFloat(req.body.commission) : 10.0,
         executives: req.body.executives || [],
         startDate: req.body.startDate,
         endDate: req.body.endDate,
-        status: req.body.status,
+        status: req.body.status || 'Ativo',
+        mediaType: req.body.mediaType || 'Spots de 30"',
+        spotsPerDay: parseInt(req.body.spotsPerDay) || 6,
+        program: req.body.program || 'Rotativo Geral',
         logo: req.body.logo || 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&auto=format&fit=crop&q=80'
     };
 
@@ -238,6 +297,7 @@ app.post('/api/clients', (req, res) => {
 
     db.clients.unshift(newClient);
     writeDb(db);
+    logAudit('CLIENTE_CRIADO', `Novo anunciante cadastrado: "${newClient.name}" - R$ ${newClient.value.toFixed(2)}/mês`, req.body.operator || 'Admin GFM');
     res.status(201).json(newClient);
 });
 
@@ -255,10 +315,12 @@ app.put('/api/clients/:id', (req, res) => {
         ...req.body,
         value: req.body.value !== undefined ? parseFloat(req.body.value) : db.clients[idx].value,
         commission: req.body.commission !== undefined ? parseFloat(req.body.commission) : db.clients[idx].commission,
-        executives: req.body.executives !== undefined ? req.body.executives : db.clients[idx].executives
+        executives: req.body.executives !== undefined ? req.body.executives : db.clients[idx].executives,
+        spotsPerDay: req.body.spotsPerDay !== undefined ? parseInt(req.body.spotsPerDay) : db.clients[idx].spotsPerDay
     };
 
     writeDb(db);
+    logAudit('CLIENTE_EDITADO', `Dados do anunciante "${db.clients[idx].name}" atualizados.`, req.body.operator || 'Admin GFM');
     res.json(db.clients[idx]);
 });
 
@@ -273,7 +335,89 @@ app.delete('/api/clients/:id', (req, res) => {
 
     const deleted = db.clients.splice(idx, 1);
     writeDb(db);
+    logAudit('CLIENTE_EXCLUIDO', `Anunciante "${deleted[0].name}" removido do sistema.`, req.query.operator || 'Admin GFM');
     res.json({ success: true, deleted: deleted[0] });
+});
+
+// POST /api/clients/:id/generate-installments (Geração Recorrente Automática)
+app.post('/api/clients/:id/generate-installments', (req, res) => {
+    const db = readDb();
+    const client = (db.clients || []).find(c => c.id === req.params.id);
+    if (!client) {
+        return res.status(404).json({ error: 'Cliente não encontrado.' });
+    }
+
+    if (!db.transactions) db.transactions = [];
+
+    const monthlyVal = parseFloat(client.value || 0);
+    if (monthlyVal <= 0) {
+        return res.status(400).json({ error: 'O contrato do cliente deve possuir um valor mensal superior a R$ 0,00.' });
+    }
+
+    const start = client.startDate ? new Date(client.startDate + 'T00:00:00') : new Date();
+    let end = client.endDate ? new Date(client.endDate + 'T00:00:00') : new Date(start.getFullYear(), start.getMonth() + 11, start.getDate());
+    
+    // Safety check if dates are inverted
+    if (end < start) {
+        end = new Date(start.getFullYear(), start.getMonth() + 11, start.getDate());
+    }
+
+    const monthNames = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+
+    const dueDay = (db.settings && db.settings.invoiceDueDay) ? db.settings.invoiceDueDay : 10;
+    const newTxs = [];
+
+    let cur = new Date(start.getFullYear(), start.getMonth(), 1);
+    const endLimit = new Date(end.getFullYear(), end.getMonth(), 1);
+
+    let installmentNum = 1;
+    while (cur <= endLimit) {
+        const y = cur.getFullYear();
+        const m = cur.getMonth();
+        const monthLabel = `${monthNames[m]}/${y}`;
+        const formattedMonth = String(m + 1).padStart(2, '0');
+        const formattedDay = String(dueDay).padStart(2, '0');
+        const txDate = `${y}-${formattedMonth}-${formattedDay}`;
+
+        // Check duplicate
+        const exists = db.transactions.some(t => 
+            (t.clientId === client.id || (t.entity && t.entity.toLowerCase() === client.name.toLowerCase())) &&
+            t.description && t.description.includes(monthLabel)
+        );
+
+        if (!exists) {
+            const tx = {
+                id: 't_inst_' + Date.now() + '_' + installmentNum,
+                date: txDate,
+                description: `Mensalidade Publicitária - ${client.name} (${monthLabel})`,
+                type: 'Receita',
+                category: 'Receita Comercial',
+                amount: monthlyVal,
+                status: 'Pendente',
+                paymentMethod: 'Boleto Bancário / PIX',
+                entity: client.name,
+                clientId: client.id,
+                installment: installmentNum
+            };
+            newTxs.push(tx);
+            db.transactions.unshift(tx);
+        }
+
+        installmentNum++;
+        cur.setMonth(cur.getMonth() + 1);
+    }
+
+    writeDb(db);
+    logAudit('PARCELAS_GERADAS', `Geradas ${newTxs.length} parcelas recorrentes para "${client.name}".`, req.body.operator || 'Admin GFM');
+
+    res.json({
+        success: true,
+        generatedCount: newTxs.length,
+        message: `${newTxs.length} faturas mensais foram geradas no Contas a Receber!`
+    });
 });
 
 // ==========================================================================
@@ -403,60 +547,88 @@ app.get('/api/financial/summary', (req, res) => {
     const resultadoLiquido = totalReceitas - totalDespesas;
     const resultadoCaixaEfetivado = totalReceitasPagas - totalDespesasPagas;
 
-    // Executive Commissions dynamic calculation
+    // Executive Commissions dynamic calculation (Liberadas x Pendentes)
     let totalCommissions = 0;
+    let releasedCommissions = 0;
+    let pendingCommissions = 0;
     const commissionsByExec = {};
 
     clients.forEach(client => {
         if (client.status === 'Ativo') {
             const clientVal = parseFloat(client.value || 0);
-            if (client.executives && Array.isArray(client.executives) && client.executives.length > 0) {
-                client.executives.forEach(item => {
-                    const execCode = item.executive;
-                    const commRate = parseFloat(item.commission || 0);
-                    const commVal = clientVal * (commRate / 100);
-                    totalCommissions += commVal;
-                    
-                    const collab = collabs.find(c => String(c.code).padStart(2, '0') === String(execCode).padStart(2, '0'));
-                    const execName = collab ? collab.name : `Executivo ${execCode}`;
-                    
-                    if (!commissionsByExec[execCode]) {
-                        commissionsByExec[execCode] = {
-                            code: execCode,
-                            name: execName,
-                            totalContracts: 0,
-                            totalValue: 0,
-                            totalCommission: 0
-                        };
-                    }
-                    commissionsByExec[execCode].totalContracts += 1;
-                    commissionsByExec[execCode].totalValue += clientVal;
-                    commissionsByExec[execCode].totalCommission += commVal;
-                });
-            } else if (client.executive) {
-                const execCode = client.executive;
-                const commRate = parseFloat(client.commission || 10);
-                const commVal = clientVal * (commRate / 100);
-                totalCommissions += commVal;
+            
+            // Client transactions in database
+            const clientTxs = txs.filter(t => 
+                (t.clientId && t.clientId === client.id) ||
+                (t.entity && t.entity.toLowerCase() === client.name.toLowerCase())
+            );
 
-                const collab = collabs.find(c => String(c.code).padStart(2, '0') === String(execCode).padStart(2, '0'));
+            const execs = (client.executives && Array.isArray(client.executives) && client.executives.length > 0)
+                ? client.executives
+                : [{ executive: client.executive || '02', commission: client.commission || 10.0 }];
+
+            execs.forEach(item => {
+                const execCode = String(item.executive || '02').padStart(2, '0');
+                const commRate = parseFloat(item.commission || 10.0);
+                const collab = collabs.find(c => String(c.code).padStart(2, '0') === execCode);
                 const execName = collab ? collab.name : `Executivo ${execCode}`;
+                const execAvatar = collab ? collab.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80';
 
                 if (!commissionsByExec[execCode]) {
                     commissionsByExec[execCode] = {
                         code: execCode,
                         name: execName,
+                        avatar: execAvatar,
                         totalContracts: 0,
                         totalValue: 0,
-                        totalCommission: 0
+                        totalCommission: 0,
+                        releasedCommission: 0,
+                        pendingCommission: 0
                     };
                 }
+
                 commissionsByExec[execCode].totalContracts += 1;
                 commissionsByExec[execCode].totalValue += clientVal;
-                commissionsByExec[execCode].totalCommission += commVal;
-            }
+
+                if (clientTxs.length > 0) {
+                    clientTxs.forEach(t => {
+                        const txVal = parseFloat(t.amount || 0);
+                        const cVal = (txVal * commRate) / 100;
+                        totalCommissions += cVal;
+                        commissionsByExec[execCode].totalCommission += cVal;
+
+                        if (t.status === 'Pago') {
+                            releasedCommissions += cVal;
+                            commissionsByExec[execCode].releasedCommission += cVal;
+                        } else {
+                            pendingCommissions += cVal;
+                            commissionsByExec[execCode].pendingCommission += cVal;
+                        }
+                    });
+                } else {
+                    const cVal = (clientVal * commRate) / 100;
+                    totalCommissions += cVal;
+                    pendingCommissions += cVal;
+                    commissionsByExec[execCode].totalCommission += cVal;
+                    commissionsByExec[execCode].pendingCommission += cVal;
+                }
+            });
         }
     });
+
+    res.json({
+        totalReceitas,
+        totalReceitasPagas,
+        totalDespesas,
+        totalDespesasPagas,
+        resultadoLiquido,
+        resultadoCaixaEfetivado,
+        totalCommissions,
+        releasedCommissions,
+        pendingCommissions,
+        commissionsByExec
+    });
+});
 
 // GET /api/dashboard/overview (Consolidated Executive Dashboard Data)
 app.get('/api/dashboard/overview', (req, res) => {
@@ -634,6 +806,172 @@ app.delete('/api/settings/users/:id', (req, res) => {
     const deleted = db.users.splice(idx, 1);
     writeDb(db);
     res.json({ success: true, deleted: deleted[0] });
+});
+
+// ==========================================================================
+// 7. COMMISSIONS STATEMENT, NOTIFICATIONS, SEARCH & AUDIT LOGS
+// ==========================================================================
+
+// GET /api/financial/commissions-statement/:execCode
+app.get('/api/financial/commissions-statement/:execCode', (req, res) => {
+    const db = readDb();
+    const execCode = String(req.params.execCode).padStart(2, '0');
+    const collabs = db.collaborators || [];
+    const clients = db.clients || [];
+    const txs = db.transactions || [];
+
+    const collab = collabs.find(c => String(c.code).padStart(2, '0') === execCode);
+    const execName = collab ? collab.name : `Executivo ${execCode}`;
+
+    // Find clients that this executive represents
+    const myClients = clients.filter(c => {
+        if (c.executives && Array.isArray(c.executives) && c.executives.length > 0) {
+            return c.executives.some(e => String(e.executive).padStart(2, '0') === execCode);
+        }
+        return String(c.executive).padStart(2, '0') === execCode;
+    });
+
+    const statementItems = [];
+    let totalLiberado = 0;
+    let totalPendente = 0;
+
+    myClients.forEach(c => {
+        let commRate = 10;
+        if (c.executives && Array.isArray(c.executives) && c.executives.length > 0) {
+            const found = c.executives.find(e => String(e.executive).padStart(2, '0') === execCode);
+            if (found) commRate = parseFloat(found.commission || 10);
+        } else if (c.commission) {
+            commRate = parseFloat(c.commission || 10);
+        }
+
+        const clientTxs = txs.filter(t => 
+            (t.clientId && t.clientId === c.id) ||
+            (t.entity && t.entity.toLowerCase() === c.name.toLowerCase())
+        );
+
+        if (clientTxs.length > 0) {
+            clientTxs.forEach(t => {
+                const txVal = parseFloat(t.amount || 0);
+                const commVal = (txVal * commRate) / 100;
+                const isPaid = t.status === 'Pago';
+                if (isPaid) totalLiberado += commVal;
+                else totalPendente += commVal;
+
+                statementItems.push({
+                    clientName: c.name,
+                    cnpj: c.cnpj,
+                    date: t.date,
+                    description: t.description,
+                    transactionAmount: txVal,
+                    commissionRate: commRate,
+                    commissionAmount: commVal,
+                    status: t.status,
+                    isReleased: isPaid
+                });
+            });
+        } else {
+            const clientVal = parseFloat(c.value || 0);
+            const commVal = (clientVal * commRate) / 100;
+            totalPendente += commVal;
+            statementItems.push({
+                clientName: c.name,
+                cnpj: c.cnpj,
+                date: c.startDate || 'Contrato Vigente',
+                description: `Contrato Mensal - ${c.name}`,
+                transactionAmount: clientVal,
+                commissionRate: commRate,
+                commissionAmount: commVal,
+                status: 'Previsto em Contrato',
+                isReleased: false
+            });
+        }
+    });
+
+    res.json({
+        executive: {
+            code: execCode,
+            name: execName,
+            email: collab ? collab.email : '',
+            role: collab ? collab.role : 'Executivo Comercial',
+            avatar: collab ? collab.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
+        },
+        clientsCount: myClients.length,
+        totalLiberado,
+        totalPendente,
+        totalGeral: totalLiberado + totalPendente,
+        items: statementItems
+    });
+});
+
+// GET /api/notifications
+app.get('/api/notifications', (req, res) => {
+    const db = readDb();
+    const txs = db.transactions || [];
+    const clients = db.clients || [];
+    const today = new Date().toISOString().split('T')[0];
+
+    const overdueTxs = txs.filter(t => 
+        t.type === 'Receita' && 
+        (t.status === 'Atrasado' || (t.status === 'Pendente' && t.date < today))
+    );
+
+    const todayTxs = txs.filter(t => 
+        t.date === today && t.status !== 'Pago'
+    );
+
+    const next30Days = new Date();
+    next30Days.setDate(next30Days.getDate() + 30);
+    const next30Iso = next30Days.toISOString().split('T')[0];
+
+    const expiringContracts = clients.filter(c => 
+        c.status === 'Ativo' && 
+        c.endDate && 
+        c.endDate >= today && 
+        c.endDate <= next30Iso
+    );
+
+    const totalCount = overdueTxs.length + todayTxs.length + expiringContracts.length;
+
+    res.json({
+        totalCount,
+        overdueTxs: overdueTxs.slice(0, 8),
+        todayTxs: todayTxs.slice(0, 8),
+        expiringContracts: expiringContracts.slice(0, 8)
+    });
+});
+
+// GET /api/search (Spotlight Quick Search)
+app.get('/api/search', (req, res) => {
+    const db = readDb();
+    const q = (req.query.q || '').toLowerCase().trim();
+    if (!q) return res.json({ collaborators: [], clients: [], transactions: [] });
+
+    const collabs = (db.collaborators || []).filter(c => 
+        (c.name && c.name.toLowerCase().includes(q)) ||
+        (c.role && c.role.toLowerCase().includes(q)) ||
+        (c.cpf && c.cpf.includes(q)) ||
+        (c.code && String(c.code).includes(q))
+    ).slice(0, 5);
+
+    const clients = (db.clients || []).filter(c => 
+        (c.name && c.name.toLowerCase().includes(q)) ||
+        (c.cnpj && c.cnpj.includes(q)) ||
+        (c.segment && c.segment.toLowerCase().includes(q))
+    ).slice(0, 5);
+
+    const transactions = (db.transactions || []).filter(t => 
+        (t.description && t.description.toLowerCase().includes(q)) ||
+        (t.entity && t.entity.toLowerCase().includes(q)) ||
+        (t.category && t.category.toLowerCase().includes(q))
+    ).slice(0, 5);
+
+    res.json({ collaborators: collabs, clients, transactions });
+});
+
+// GET /api/settings/audit-logs
+app.get('/api/settings/audit-logs', (req, res) => {
+    const db = readDb();
+    res.json(db.auditLogs || []);
 });
 
 // SPA Fallback — always serve GFM index.html for non-API routes

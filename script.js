@@ -258,6 +258,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const clientStartDateInput = document.getElementById('clientStartDate');
     const clientEndDateInput = document.getElementById('clientEndDate');
     const clientStatusSelect = document.getElementById('clientStatus');
+    const clientContactPersonInput = document.getElementById('clientContactPerson');
+    const clientMediaTypeSelect = document.getElementById('clientMediaType');
+    const clientSpotsPerDayInput = document.getElementById('clientSpotsPerDay');
+    const clientProgramSelect = document.getElementById('clientProgram');
     const clientLogoFileInput = document.getElementById('clientLogoFile');
     const clientLogoPreview = document.getElementById('clientLogoPreview');
 
@@ -363,12 +367,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const isLoggedIn = localStorage.getItem('gfm_session') === 'active';
         if (isLoggedIn) {
             const username = localStorage.getItem('gfm_user') || 'Admin GFM';
+            const role = localStorage.getItem('gfm_user_role') || 'Gestor Financeiro';
             loggedInUserName.textContent = username;
+            const userRoleEl = document.querySelector('.user-role');
+            if (userRoleEl) userRoleEl.textContent = role;
+
             loginView.classList.add('hidden');
             appView.classList.remove('hidden');
             loadDashboard();
             renderCollaboratorsTable();
             renderClientsTable();
+            loadNotifications();
         } else {
             loginView.classList.remove('hidden');
             appView.classList.add('hidden');
@@ -420,7 +429,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (authResult && authResult.success) {
             localStorage.setItem('gfm_session', 'active');
             localStorage.setItem('gfm_user', authResult.user.name);
+            localStorage.setItem('gfm_user_role', authResult.user.role || 'Gestor Financeiro');
+            if (authResult.user.collabCode) localStorage.setItem('gfm_user_code', authResult.user.collabCode);
+            else localStorage.removeItem('gfm_user_code');
+
             loggedInUserName.textContent = authResult.user.name;
+            const userRoleEl = document.querySelector('.user-role');
+            if (userRoleEl) userRoleEl.textContent = authResult.user.role || 'Gestor Financeiro';
             
             showToast(`Bem-vindo ao Financeiro GFM, ${authResult.user.name}!`, 'success');
             loginView.classList.add('hidden');
@@ -429,10 +444,12 @@ document.addEventListener('DOMContentLoaded', () => {
             loadDashboard();
             renderCollaboratorsTable();
             renderClientsTable();
+            loadNotifications();
         } else if (usernameVal.toLowerCase() === 'admin' || usernameVal.includes('@')) {
             // Offline fallback
             localStorage.setItem('gfm_session', 'active');
             localStorage.setItem('gfm_user', usernameVal);
+            localStorage.setItem('gfm_user_role', 'Gestor Financeiro');
             loggedInUserName.textContent = usernameVal;
             
             showToast(`Bem-vindo ao Financeiro GFM, ${usernameVal}!`, 'success');
@@ -442,6 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadDashboard();
             renderCollaboratorsTable();
             renderClientsTable();
+            loadNotifications();
         } else {
             showAlert('Usuário ou senha incorretos. Dica: use "admin" ou seu e-mail.', 'error');
             showToast('Falha na autenticação.', 'error');
@@ -699,21 +717,6 @@ document.addEventListener('DOMContentLoaded', () => {
             refreshIcons();
             return;
         }
-    }
-            const pct = Math.round((amount / maxDeptSalary) * 100);
-            const barItem = document.createElement('div');
-            barItem.className = 'dept-bar-item';
-            barItem.innerHTML = `
-                <div class="dept-bar-label">
-                    <span>${deptName}</span>
-                    <span>${formatCurrency(amount)}</span>
-                </div>
-                <div class="dept-bar-track">
-                    <div class="dept-bar-fill" style="width: ${pct}%"></div>
-                </div>
-            `;
-            deptDistributionList.appendChild(barItem);
-        });
     }
 
     // --------------------------------------------------------------------------
@@ -1004,6 +1007,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     </td>
                     <td class="text-right">
                         <div class="action-btns">
+                            <button class="icon-action-btn gen-installments" data-id="${client.id}" title="Gerar Parcelas Mensais no Financeiro">
+                                <i data-lucide="calendar-plus"></i>
+                            </button>
+                            <button class="icon-action-btn print-pi" data-id="${client.id}" title="Emitir Pedido de Inserção / Contrato (PDF)">
+                                <i data-lucide="printer"></i>
+                            </button>
                             <button class="icon-action-btn edit-client" data-id="${client.id}" title="Editar Cliente">
                                 <i data-lucide="edit-3"></i>
                             </button>
@@ -1022,6 +1031,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function attachClientTableEvents() {
+        // Gerar Parcelas Automáticas
+        document.querySelectorAll('.icon-action-btn.gen-installments').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                const clients = await getClients();
+                const target = clients.find(c => c.id === id);
+                if (!target) return;
+
+                if (confirm(`Deseja gerar as faturas mensais automáticas de ${formatCurrency(target.value)} para o contrato de "${target.name}" no Contas a Receber?`)) {
+                    const res = await apiFetch(`/clients/${id}/generate-installments`, { method: 'POST' });
+                    if (res && res.success) {
+                        showToast(res.message, 'success');
+                        loadFinancialOverview();
+                    } else {
+                        showToast(res ? res.error : 'Erro ao gerar parcelas.', 'error');
+                    }
+                }
+            });
+        });
+
+        // Emitir Pedido de Inserção & Contrato Timbrado
+        document.querySelectorAll('.icon-action-btn.print-pi').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                const clients = await getClients();
+                const target = clients.find(c => c.id === id);
+                if (target) openPiModal(target);
+            });
+        });
+
         document.querySelectorAll('.icon-action-btn.edit-client').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = btn.getAttribute('data-id');
@@ -1050,6 +1089,59 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    // Modal P.I. (Pedido de Inserção / Contrato)
+    async function openPiModal(client) {
+        const collabs = await getCollaborators();
+        const piModal = document.getElementById('piModal');
+        if (!piModal) return;
+
+        const cleanId = String(client.id || '1').replace(/\D/g, '').padStart(4, '0');
+        document.getElementById('piDocNumber').textContent = `PI-2026/${cleanId || '0045'}`;
+        document.getElementById('piDocDate').textContent = `Emissão: ${new Date().toLocaleDateString('pt-BR')}`;
+
+        document.getElementById('piClientName').textContent = client.name || '-';
+        document.getElementById('piClientCnpj').textContent = client.cnpj || '-';
+        document.getElementById('piClientContact').textContent = client.contactPerson || 'Representante Legal';
+        document.getElementById('piClientPhone').textContent = client.phone || '-';
+        document.getElementById('piClientEmail').textContent = client.email || '-';
+        document.getElementById('piClientSegment').textContent = client.segment || '-';
+
+        document.getElementById('piMediaType').textContent = client.mediaType || 'Spots de 30 segundos';
+        const spots = client.spotsPerDay || 6;
+        document.getElementById('piSpotsPerDay').textContent = `${spots} inserções/dia`;
+        document.getElementById('piProgram').textContent = client.program || 'Rotativo Geral (06h às 22h)';
+        document.getElementById('piPeriod').textContent = `${formatDate(client.startDate)} a ${formatDate(client.endDate)}`;
+        document.getElementById('piTotalSpots').textContent = `${spots * 30} inserções/mês est.`;
+
+        document.getElementById('piMonthlyValue').textContent = formatCurrency(client.value || 0);
+        document.getElementById('piPaymentMethod').textContent = 'Boleto Bancário / PIX (Venc. dia 10)';
+
+        // Nomes dos Executivos
+        let execNames = [];
+        if (client.executives && client.executives.length > 0) {
+            client.executives.forEach(e => {
+                const c = collabs.find(col => String(col.code).padStart(2, '0') === String(e.executive).padStart(2, '0'));
+                execNames.push(c ? c.name : `Executivo ${e.executive}`);
+            });
+        } else if (client.executive) {
+            const c = collabs.find(col => String(col.code).padStart(2, '0') === String(client.executive).padStart(2, '0'));
+            execNames.push(c ? c.name : `Executivo ${client.executive}`);
+        }
+        document.getElementById('piExecutiveName').textContent = execNames.join(', ') || 'Departamento Comercial GFM';
+        document.getElementById('piSignClientName').textContent = client.contactPerson ? `${client.contactPerson} (${client.name})` : client.name;
+
+        piModal.classList.remove('hidden');
+        refreshIcons();
+    }
+
+    const printPiBtn = document.getElementById('printPiBtn');
+    if (printPiBtn) printPiBtn.addEventListener('click', () => window.print());
+
+    const closePiModalBtn = document.getElementById('closePiModalBtn');
+    if (closePiModalBtn) closePiModalBtn.addEventListener('click', () => {
+        document.getElementById('piModal')?.classList.add('hidden');
+    });
 
     searchClientInput.addEventListener('input', renderClientsTable);
     segmentFilterSelect.addEventListener('change', renderClientsTable);
@@ -1305,6 +1397,12 @@ document.addEventListener('DOMContentLoaded', () => {
             clientStartDateInput.value = clientData.startDate;
             clientEndDateInput.value = clientData.endDate;
             clientStatusSelect.value = clientData.status;
+
+            if (clientContactPersonInput) clientContactPersonInput.value = clientData.contactPerson || '';
+            if (clientMediaTypeSelect) clientMediaTypeSelect.value = clientData.mediaType || 'Spots de 30"';
+            if (clientSpotsPerDayInput) clientSpotsPerDayInput.value = clientData.spotsPerDay || 6;
+            if (clientProgramSelect) clientProgramSelect.value = clientData.program || 'Rotativo Geral (06h às 22h)';
+
             currentClientLogoData = clientData.logo || DEFAULT_LOGO;
             clientLogoPreview.src = currentClientLogoData;
         } else {
@@ -1318,6 +1416,12 @@ document.addEventListener('DOMContentLoaded', () => {
             nextYear.setFullYear(nextYear.getFullYear() + 1);
             clientStartDateInput.value = today;
             clientEndDateInput.value = nextYear.toISOString().split('T')[0];
+
+            if (clientContactPersonInput) clientContactPersonInput.value = '';
+            if (clientMediaTypeSelect) clientMediaTypeSelect.value = 'Spots de 30"';
+            if (clientSpotsPerDayInput) clientSpotsPerDayInput.value = 6;
+            if (clientProgramSelect) clientProgramSelect.value = 'Rotativo Geral (06h às 22h)';
+
             currentClientLogoData = DEFAULT_LOGO;
             clientLogoPreview.src = currentClientLogoData;
         }
@@ -1361,6 +1465,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cnpj: clientCnpjInput.value.trim(),
             email: clientEmailInput.value.trim(),
             phone: clientPhoneInput.value.trim(),
+            contactPerson: clientContactPersonInput ? clientContactPersonInput.value.trim() : '',
             segment: clientSegmentSelect.value,
             value: parseFloat(clientValueInput.value) || 0,
             executive: primaryExec,
@@ -1369,6 +1474,9 @@ document.addEventListener('DOMContentLoaded', () => {
             startDate: clientStartDateInput.value,
             endDate: clientEndDateInput.value,
             status: clientStatusSelect.value,
+            mediaType: clientMediaTypeSelect ? clientMediaTypeSelect.value : 'Spots de 30"',
+            spotsPerDay: clientSpotsPerDayInput ? (parseInt(clientSpotsPerDayInput.value) || 6) : 6,
+            program: clientProgramSelect ? clientProgramSelect.value : 'Rotativo Geral (06h às 22h)',
             logo: currentClientLogoData || DEFAULT_LOGO
         };
 
@@ -1788,6 +1896,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `<button class="action-btn-sm pay-btn btn-quick-pay" data-id="${t.id}" title="Marcar como Pago/Quitado"><i data-lucide="check"></i> Quitar</button>`
                 : '';
 
+            const waActionBtn = (isIncome && t.status !== 'Pago')
+                ? `<button class="btn-wa-charge btn-quick-wa" data-id="${t.id}" title="Cobrar pelo WhatsApp"><i data-lucide="message-circle"></i> Cobrar</button>`
+                : '';
+
             tr.innerHTML = `
                 <td><strong>${formatDate(t.date)}</strong></td>
                 <td>
@@ -1804,6 +1916,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="text-right">
                     <div class="action-buttons">
                         ${payActionBtn}
+                        ${waActionBtn}
                         <button class="icon-btn edit-btn btn-edit-tx" data-id="${t.id}" title="Editar Lançamento">
                             <i data-lucide="edit-3"></i>
                         </button>
@@ -1829,6 +1942,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('Lançamento quitado com sucesso no Caixa GFM!', 'success');
                     loadFinancialOverview();
                 }
+            });
+        });
+
+        // Wire Quick WhatsApp Charge
+        document.querySelectorAll('.btn-quick-wa').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                const list = await getTransactions();
+                const clients = await getClients();
+                const target = list.find(t => t.id === id);
+                if (!target) return;
+
+                let client = clients.find(c => 
+                    (target.clientId && c.id === target.clientId) ||
+                    (target.entity && c.name.toLowerCase() === target.entity.toLowerCase())
+                );
+
+                let phone = client ? (client.phone || '').replace(/\D/g, '') : '';
+                if (!phone || phone.length < 10) {
+                    const typed = prompt('Informe o WhatsApp do anunciante para envio da cobrança (com DDD):', phone);
+                    if (!typed) return;
+                    phone = typed.replace(/\D/g, '');
+                }
+
+                const msg = `Olá! Tudo bem? Aqui é do Departamento Financeiro da Rádio Grande FM 94.5.\n\nPassando para lembrar sobre a fatura referente a "${target.description}", no valor de ${formatCurrency(target.amount)}, com vencimento em ${formatDate(target.date)}.\n\nChave PIX da emissora: comercial@grandefm.com.br\n\nCaso já tenha efetuado o pagamento, por favor desconsidere este lembrete. Muito obrigado!`;
+
+                window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`, '_blank');
             });
         });
 
@@ -2007,9 +2147,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="text-right"><strong>${formatCurrency(exec.totalRevenue)}</strong></td>
                 <td class="text-right"><small>${avgRate}</small></td>
                 <td class="text-right"><span class="tx-amount income">${formatCurrency(exec.totalCommission)}</span></td>
-                <td class="text-center"><span class="status-pill status-pending">Calculado (A Pagar)</span></td>
+                <td class="text-center">
+                    <button class="action-btn-sm blue-btn view-statement-btn" data-code="${exec.code}" title="Ver Extrato e Recibo">
+                        <i data-lucide="file-text"></i> Extrato / Recibo
+                    </button>
+                </td>
             `;
             tbody.appendChild(tr);
+        });
+
+        document.querySelectorAll('.view-statement-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const code = btn.getAttribute('data-code');
+                openStatementModal(code);
+            });
         });
 
         refreshIcons();
@@ -2346,6 +2497,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (targetTab === 'backup') document.getElementById('cfgBackupView')?.classList.remove('hidden');
             if (targetTab === 'security') document.getElementById('cfgSecurityView')?.classList.remove('hidden');
             if (targetTab === 'preferences') document.getElementById('cfgPreferencesView')?.classList.remove('hidden');
+            if (targetTab === 'audit') {
+                document.getElementById('cfgAuditView')?.classList.remove('hidden');
+                renderAuditLogs();
+            }
 
             refreshIcons();
         });
@@ -2602,6 +2757,402 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             reader.readAsText(file);
         });
+    }
+
+    // ==========================================================================
+    // 16. EXTRATO INDIVIDUAL DE COMISSÕES (EXECUTIVO DE VENDAS)
+    // ==========================================================================
+    async function openStatementModal(execCode) {
+        const statementModal = document.getElementById('statementModal');
+        if (!statementModal) return;
+
+        try {
+            const data = await apiFetch(`/financial/commissions-statement/${execCode}`);
+            if (!data) return;
+
+            document.getElementById('statementCode').textContent = `Cód: ${data.executive.code}`;
+            document.getElementById('statementExecName').textContent = data.executive.name;
+            document.getElementById('statementExecRole').textContent = `${data.executive.role} • Rádio Grande FM 94.5`;
+            if (data.executive.avatar) {
+                document.getElementById('statementAvatar').src = data.executive.avatar;
+            }
+
+            document.getElementById('stmtReleasedVal').textContent = formatCurrency(data.totalLiberado);
+            document.getElementById('stmtPendingVal').textContent = formatCurrency(data.totalPendente);
+            document.getElementById('stmtTotalVal').textContent = formatCurrency(data.totalGeral);
+            document.getElementById('stmtClientsCount').textContent = `${data.clientsCount} cliente(s) sob gestão`;
+
+            const tbody = document.getElementById('statementTableBody');
+            tbody.innerHTML = '';
+
+            if (!data.items || data.items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 1.5rem;">Nenhum lançamento registrado para este executivo.</td></tr>`;
+            } else {
+                data.items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    const badge = item.isReleased
+                        ? `<span class="status-pill status-paid">● Liberada (Paga)</span>`
+                        : `<span class="status-pill status-pending">● Pendente (A Vencer)</span>`;
+
+                    tr.innerHTML = `
+                        <td><strong>${formatDate(item.date)}</strong></td>
+                        <td><strong>${item.clientName}</strong><br><small style="color:var(--text-muted);">${item.cnpj || ''}</small></td>
+                        <td>${item.description}</td>
+                        <td class="text-right">${formatCurrency(item.transactionAmount)}</td>
+                        <td class="text-right"><span class="badge-tag">${item.commissionRate.toFixed(1)}%</span></td>
+                        <td class="text-right"><strong>${formatCurrency(item.commissionAmount)}</strong></td>
+                        <td class="text-center">${badge}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            statementModal.classList.remove('hidden');
+            refreshIcons();
+        } catch (err) {
+            showToast('Erro ao carregar extrato do executivo.', 'error');
+        }
+    }
+
+    const printStatementBtn = document.getElementById('printStatementBtn');
+    if (printStatementBtn) printStatementBtn.addEventListener('click', () => window.print());
+
+    const closeStatementModalBtn = document.getElementById('closeStatementModalBtn');
+    if (closeStatementModalBtn) closeStatementModalBtn.addEventListener('click', () => {
+        document.getElementById('statementModal')?.classList.add('hidden');
+    });
+
+    // ==========================================================================
+    // 17. EXPORTAR ANUNCIANTES PARA PLANILHA CSV
+    // ==========================================================================
+    const exportClientsCsvBtn = document.getElementById('exportClientsCsvBtn');
+    if (exportClientsCsvBtn) {
+        exportClientsCsvBtn.addEventListener('click', async () => {
+            const clients = await getClients();
+            let csv = 'Razão Social / Nome;CNPJ/CPF;Segmento;Contato;Telefone;E-mail;Valor Mensal (R$);Início Contrato;Vencimento;Status;Formato Mídia;Inserções/Dia;Programa\n';
+            clients.forEach(c => {
+                csv += `"${c.name}";"${c.cnpj}";"${c.segment}";"${c.contactPerson || ''}";"${c.phone}";"${c.email}";"${parseFloat(c.value || 0).toFixed(2)}";"${c.startDate}";"${c.endDate}";"${c.status}";"${c.mediaType || 'Spots 30s'}";"${c.spotsPerDay || 6}";"${c.program || 'Rotativo'}"\n`;
+            });
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Clientes_Anunciantes_GrandeFM_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Planilha de anunciantes exportada com sucesso em CSV!', 'success');
+        });
+    }
+
+    // ==========================================================================
+    // 18. SPOTLIGHT GLOBAL SEARCH (CTRL + K)
+    // ==========================================================================
+    const searchModal = document.getElementById('searchModal');
+    const spotlightInput = document.getElementById('spotlightInput');
+    const spotlightResults = document.getElementById('spotlightResults');
+    const globalSearchBtn = document.getElementById('globalSearchBtn');
+
+    function openSpotlightSearch() {
+        if (!searchModal) return;
+        searchModal.classList.remove('hidden');
+        if (spotlightInput) {
+            spotlightInput.value = '';
+            spotlightInput.focus();
+        }
+        if (spotlightResults) {
+            spotlightResults.innerHTML = `
+                <div class="spotlight-empty">
+                    <i data-lucide="compass"></i>
+                    <p>Digite para buscar colaboradores, clientes e despesas...</p>
+                </div>
+            `;
+        }
+        refreshIcons();
+    }
+
+    function closeSpotlightSearch() {
+        if (!searchModal) return;
+        searchModal.classList.add('hidden');
+    }
+
+    if (globalSearchBtn) globalSearchBtn.addEventListener('click', openSpotlightSearch);
+    if (searchModal) {
+        searchModal.addEventListener('click', (e) => {
+            if (e.target === searchModal) closeSpotlightSearch();
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            openSpotlightSearch();
+        }
+        if (e.key === 'Escape' && searchModal && !searchModal.classList.contains('hidden')) {
+            closeSpotlightSearch();
+        }
+    });
+
+    if (spotlightInput) {
+        let debounceTimer = null;
+        spotlightInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            const q = e.target.value.trim();
+            if (!q) {
+                spotlightResults.innerHTML = `
+                    <div class="spotlight-empty">
+                        <i data-lucide="compass"></i>
+                        <p>Digite para buscar colaboradores, clientes e despesas...</p>
+                    </div>
+                `;
+                refreshIcons();
+                return;
+            }
+
+            debounceTimer = setTimeout(async () => {
+                const data = await apiFetch(`/search?q=${encodeURIComponent(q)}`);
+                if (!data) return;
+
+                let html = '';
+                const hasCollabs = data.collaborators && data.collaborators.length > 0;
+                const hasClients = data.clients && data.clients.length > 0;
+                const hasTxs = data.transactions && data.transactions.length > 0;
+
+                if (!hasCollabs && !hasClients && !hasTxs) {
+                    spotlightResults.innerHTML = `
+                        <div class="spotlight-empty">
+                            <i data-lucide="alert-circle"></i>
+                            <p>Nenhum resultado encontrado para "${q}".</p>
+                        </div>
+                    `;
+                    refreshIcons();
+                    return;
+                }
+
+                if (hasCollabs) {
+                    html += `<div class="spotlight-category-title">Colaboradores & Equipe GFM</div>`;
+                    data.collaborators.forEach(c => {
+                        html += `
+                            <div class="spotlight-item" data-type="collab" data-id="${c.id}">
+                                <div class="spotlight-item-main">
+                                    <div class="spotlight-item-icon"><i data-lucide="user"></i></div>
+                                    <div>
+                                        <div class="spotlight-item-title">${c.name}</div>
+                                        <div class="spotlight-item-subtitle">${c.role} • Depto: ${c.dept}</div>
+                                    </div>
+                                </div>
+                                <span class="spotlight-item-badge badge-tag">Cód: ${c.code || '-'}</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                if (hasClients) {
+                    html += `<div class="spotlight-category-title">Clientes Anunciantes & Contratos</div>`;
+                    data.clients.forEach(c => {
+                        html += `
+                            <div class="spotlight-item" data-type="client" data-id="${c.id}">
+                                <div class="spotlight-item-main">
+                                    <div class="spotlight-item-icon"><i data-lucide="briefcase"></i></div>
+                                    <div>
+                                        <div class="spotlight-item-title">${c.name}</div>
+                                        <div class="spotlight-item-subtitle">CNPJ: ${c.cnpj} • ${c.segment}</div>
+                                    </div>
+                                </div>
+                                <span class="spotlight-item-badge badge-tag gold">${formatCurrency(c.value)}/mês</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                if (hasTxs) {
+                    html += `<div class="spotlight-category-title">Lançamentos Financeiros</div>`;
+                    data.transactions.forEach(t => {
+                        const isInc = t.type === 'Receita';
+                        html += `
+                            <div class="spotlight-item" data-type="tx" data-id="${t.id}">
+                                <div class="spotlight-item-main">
+                                    <div class="spotlight-item-icon"><i data-lucide="${isInc ? 'arrow-up-right' : 'arrow-down-right'}"></i></div>
+                                    <div>
+                                        <div class="spotlight-item-title">${t.description}</div>
+                                        <div class="spotlight-item-subtitle">${formatDate(t.date)} • ${t.entity} • ${t.category}</div>
+                                    </div>
+                                </div>
+                                <span class="spotlight-item-badge ${isInc ? 'tx-amount income' : 'tx-amount expense'}">${formatCurrency(t.amount)}</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                spotlightResults.innerHTML = html;
+                refreshIcons();
+
+                spotlightResults.querySelectorAll('.spotlight-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const type = item.getAttribute('data-type');
+                        closeSpotlightSearch();
+
+                        if (type === 'collab') {
+                            document.getElementById('navCollaborators')?.click();
+                            setTimeout(() => {
+                                const input = document.getElementById('searchCollabInput');
+                                if (input) { input.value = item.querySelector('.spotlight-item-title').textContent; input.dispatchEvent(new Event('input')); }
+                            }, 200);
+                        } else if (type === 'client') {
+                            document.getElementById('navClients')?.click();
+                            setTimeout(() => {
+                                const input = document.getElementById('searchClientInput');
+                                if (input) { input.value = item.querySelector('.spotlight-item-title').textContent; input.dispatchEvent(new Event('input')); }
+                            }, 200);
+                        } else if (type === 'tx') {
+                            document.getElementById('navFinancial')?.click();
+                            setTimeout(() => {
+                                const input = document.getElementById('txSearchInput');
+                                if (input) { input.value = item.querySelector('.spotlight-item-title').textContent; input.dispatchEvent(new Event('input')); }
+                            }, 200);
+                        }
+                    });
+                });
+            }, 250);
+        });
+    }
+
+    // ==========================================================================
+    // 19. NOTIFICAÇÕES & CENTRAL DE ALERTAS
+    // ==========================================================================
+    const notificationBtn = document.getElementById('notificationBtn');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const notificationDot = document.getElementById('notificationDot');
+    const notificationBadge = document.getElementById('notificationBadge');
+    const notifTotalCount = document.getElementById('notifTotalCount');
+    const notifList = document.getElementById('notifList');
+
+    async function loadNotifications() {
+        try {
+            const data = await apiFetch('/notifications');
+            if (!data) return;
+
+            const count = data.totalCount || 0;
+            if (count > 0) {
+                notificationDot?.classList.remove('hidden');
+                if (notificationBadge) {
+                    notificationBadge.textContent = count;
+                    notificationBadge.classList.remove('hidden');
+                }
+                if (notifTotalCount) notifTotalCount.textContent = `${count} pendência(s)`;
+            } else {
+                notificationDot?.classList.add('hidden');
+                notificationBadge?.classList.add('hidden');
+                if (notifTotalCount) notifTotalCount.textContent = '0 pendências';
+            }
+
+            if (!notifList) return;
+
+            if (count === 0) {
+                notifList.innerHTML = `<div class="notif-empty"><i data-lucide="check-circle" style="color:#10b981;margin-bottom:0.5rem;display:inline-block;"></i><br>Tudo em dia! Nenhuma pendência urgente.</div>`;
+                refreshIcons();
+                return;
+            }
+
+            let html = '';
+
+            if (data.overdueTxs && data.overdueTxs.length > 0) {
+                data.overdueTxs.forEach(t => {
+                    html += `
+                        <div class="notif-item danger" style="cursor:pointer;" onclick="document.getElementById('navFinancial').click();">
+                            <div class="notif-icon danger"><i data-lucide="alert-triangle"></i></div>
+                            <div class="notif-details">
+                                <div class="notif-title">Fatura Vencida: ${t.entity || t.description}</div>
+                                <div class="notif-subtext">Valor: ${formatCurrency(t.amount)} • Venc: ${formatDate(t.date)}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (data.expiringContracts && data.expiringContracts.length > 0) {
+                data.expiringContracts.forEach(c => {
+                    html += `
+                        <div class="notif-item warning" style="cursor:pointer;" onclick="document.getElementById('navClients').click();">
+                            <div class="notif-icon warning"><i data-lucide="clock"></i></div>
+                            <div class="notif-details">
+                                <div class="notif-title">Contrato Vencendo: ${c.name}</div>
+                                <div class="notif-subtext">Expira em: ${formatDate(c.endDate)} • R$ ${formatCurrency(c.value)}/mês</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (data.todayTxs && data.todayTxs.length > 0) {
+                data.todayTxs.forEach(t => {
+                    html += `
+                        <div class="notif-item warning" style="cursor:pointer;" onclick="document.getElementById('navFinancial').click();">
+                            <div class="notif-icon warning"><i data-lucide="calendar"></i></div>
+                            <div class="notif-details">
+                                <div class="notif-title">Vence Hoje: ${t.description}</div>
+                                <div class="notif-subtext">Valor: ${formatCurrency(t.amount)} • Status: ${t.status}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            notifList.innerHTML = html;
+            refreshIcons();
+        } catch (err) {
+            console.error('Erro ao carregar notificações:', err);
+        }
+    }
+
+    if (notificationBtn) {
+        notificationBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notificationDropdown?.classList.toggle('hidden');
+        });
+    }
+
+    document.addEventListener('click', (e) => {
+        if (notificationDropdown && !notificationDropdown.contains(e.target) && e.target !== notificationBtn) {
+            notificationDropdown.classList.add('hidden');
+        }
+    });
+
+    // ==========================================================================
+    // 20. AUDITORIA & HISTÓRICO DE LOGS
+    // ==========================================================================
+    async function renderAuditLogs() {
+        const tbody = document.getElementById('auditLogsTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding:1.5rem;">Carregando logs de auditoria...</td></tr>';
+
+        try {
+            const logs = await apiFetch('/settings/audit-logs');
+            tbody.innerHTML = '';
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding:1.5rem;">Nenhum log registrado ainda.</td></tr>';
+                return;
+            }
+
+            logs.forEach(l => {
+                const tr = document.createElement('tr');
+                const dateStr = l.timestamp ? new Date(l.timestamp).toLocaleString('pt-BR') : '-';
+                tr.innerHTML = `
+                    <td><strong>${dateStr}</strong></td>
+                    <td><span class="badge-tag">${l.user || 'Admin GFM'}</span></td>
+                    <td><span class="status-pill status-paid" style="font-size:0.75rem;">${l.action}</span></td>
+                    <td>${l.details}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (err) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding:1.5rem; color:#ef4444;">Erro ao carregar auditoria.</td></tr>';
+        }
+    }
+
+    const refreshAuditBtn = document.getElementById('refreshAuditBtn');
+    if (refreshAuditBtn) {
+        refreshAuditBtn.addEventListener('click', renderAuditLogs);
     }
 
 });

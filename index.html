@@ -15,6 +15,17 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
+    <script>
+        // Limpar qualquer Service Worker antigo de outros projetos no localhost:3001
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                for (const registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+    </script>
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -215,14 +226,34 @@
                     </div>
 
                     <div class="header-right">
+                        <!-- Global Quick Search Trigger -->
+                        <button id="globalSearchBtn" class="search-trigger-btn" title="Busca Global (Ctrl + K)">
+                            <i data-lucide="search"></i>
+                            <span class="search-shortcut">Buscar... <kbd>Ctrl K</kbd></span>
+                        </button>
+
                         <button class="theme-toggle-btn themeBtn" aria-label="Alternar Tema">
                             <i data-lucide="sun" class="sun-icon"></i>
                             <i data-lucide="moon" class="moon-icon"></i>
                         </button>
 
-                        <div class="notification-bell" id="notificationBtn" title="Notificações">
-                            <i data-lucide="bell"></i>
-                            <span class="bell-dot"></span>
+                        <div class="notification-wrapper">
+                            <div class="notification-bell" id="notificationBtn" title="Notificações">
+                                <i data-lucide="bell"></i>
+                                <span class="bell-dot hidden" id="notificationDot"></span>
+                                <span class="bell-badge hidden" id="notificationBadge">0</span>
+                            </div>
+
+                            <!-- Notification Dropdown Menu -->
+                            <div class="notification-dropdown hidden" id="notificationDropdown">
+                                <div class="notif-header">
+                                    <h4>Central de Alertas GFM</h4>
+                                    <span class="notif-count" id="notifTotalCount">0 pendências</span>
+                                </div>
+                                <div class="notif-body" id="notifList">
+                                    <div class="notif-empty">Nenhum alerta pendente no momento.</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </header>
@@ -230,9 +261,6 @@
                 <!-- Dynamic Workspace Sections -->
                 <main class="workspace-content">
                     
-                    <!-- SECTION 1: DASHBOARD -->
-                    <section id="dashboardSection" class="content-section">
-                        <!-- Metric Cards Row -->
                     <!-- SECTION 1: DASHBOARD PRINCIPAL COMPLETO -->
                     <section id="dashboardSection" class="content-section">
                         
@@ -493,6 +521,11 @@
                                     <option value="Em Negociação">Em Negociação</option>
                                     <option value="Encerrado">Encerrado</option>
                                 </select>
+
+                                <button id="exportClientsCsvBtn" class="action-btn secondary" title="Exportar Anunciantes em Planilha CSV">
+                                    <i data-lucide="download"></i>
+                                    <span>Exportar CSV</span>
+                                </button>
 
                                 <button id="openAddClientModalBtn" class="primary-action-btn gold-btn">
                                     <i data-lucide="plus"></i>
@@ -836,6 +869,10 @@
                                         <i data-lucide="sliders"></i>
                                         <span>Preferências</span>
                                     </button>
+                                    <button class="cfg-subtab" data-cfg-tab="audit">
+                                        <i data-lucide="file-clock"></i>
+                                        <span>Auditoria & Logs</span>
+                                    </button>
                                 </div>
                             </div>
 
@@ -1162,6 +1199,39 @@
                                 </form>
                             </div>
 
+                            <!-- SUB-VIEW 6: AUDITORIA & LOGS DO SISTEMA -->
+                            <div id="cfgAuditView" class="cfg-tab-content hidden">
+                                <div class="settings-section-title" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <div style="display:flex; align-items:center; gap: 0.75rem;">
+                                        <i data-lucide="file-clock" class="title-icon"></i>
+                                        <div>
+                                            <h3>Histórico de Auditoria & Logs de Ação</h3>
+                                            <p>Rastreabilidade de todas as alterações, acessos e operações no Financeiro GFM</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" id="refreshAuditBtn" class="action-btn secondary">
+                                        <i data-lucide="refresh-cw"></i>
+                                        <span>Atualizar Logs</span>
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive" style="margin-top: 1.5rem;">
+                                    <table class="data-table" id="auditLogsTable">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 180px;">Data & Hora</th>
+                                                <th style="width: 180px;">Usuário / Operador</th>
+                                                <th style="width: 160px;">Ação</th>
+                                                <th>Detalhes da Operação</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="auditLogsTableBody">
+                                            <!-- Dynamically populated -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                         </div>
                     </section>
 
@@ -1366,6 +1436,15 @@
                         </div>
                     </div>
 
+                    <!-- Contato Responsável na Empresa -->
+                    <div class="input-group">
+                        <label for="clientContactPerson">Pessoa de Contato / Cargo</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="user-check" class="input-icon"></i>
+                            <input type="text" id="clientContactPerson" placeholder="Ex: Marcos Santos (Gerente Mkt)">
+                        </div>
+                    </div>
+
                     <!-- Segmento Comercial -->
                     <div class="input-group">
                         <label for="clientSegment">Segmento do Anunciante *</label>
@@ -1387,6 +1466,44 @@
                         <div class="input-wrapper">
                             <i data-lucide="dollar-sign" class="input-icon"></i>
                             <input type="number" id="clientValue" step="0.01" placeholder="12500.00" required>
+                        </div>
+                    </div>
+
+                    <!-- Pacote Comercial: Tipo de Mídia & Inserções Diárias -->
+                    <div class="input-group">
+                        <label for="clientMediaType">Formato da Mídia / Veiculação</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="radio" class="input-icon"></i>
+                            <select id="clientMediaType">
+                                <option value="Spots de 30&quot;">Spots de 30 segundos</option>
+                                <option value="Spots de 15&quot;">Spots de 15 segundos</option>
+                                <option value="Testemunhal do Locutor">Testemunhal ao Vivo do Locutor</option>
+                                <option value="Vinheta de Patrocínio">Vinheta de Patrocínio Master</option>
+                                <option value="Flash ao Vivo (Externo)">Flash ao Vivo com Repórter</option>
+                                <option value="Apoio Cultural / Horário">Apoio Cultural / Hora Certa</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="clientSpotsPerDay">Inserções por Dia (Qtd)</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="repeat" class="input-icon"></i>
+                            <input type="number" id="clientSpotsPerDay" min="1" max="50" value="6" placeholder="Ex: 6 inserções">
+                        </div>
+                    </div>
+
+                    <div class="input-group full-col">
+                        <label for="clientProgram">Programa / Faixa de Programação</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="mic" class="input-icon"></i>
+                            <select id="clientProgram">
+                                <option value="Rotativo Geral (06h às 22h)">Rotativo Geral (06h às 22h)</option>
+                                <option value="Jornal da Grande (Manhã)">Jornal da Grande (Manhã 07h-08h30)</option>
+                                <option value="Tarde Sertaneja (13h às 17h)">Tarde Sertaneja (13h às 17h)</option>
+                                <option value="Grande Esporte (11h às 12h)">Grande Esporte (11h às 12h)</option>
+                                <option value="Plantão da Noite / Fim de Semana">Plantão da Noite / Fim de Semana</option>
+                            </select>
                         </div>
                     </div>
 
@@ -1657,6 +1774,215 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 4: EMISSÃO DE P.I. (PEDIDO DE INSERÇÃO) & CONTRATO EM PDF
+         ========================================================================== -->
+    <div id="piModal" class="modal-backdrop hidden">
+        <div class="modal-card modal-pi print-modal">
+            <div class="modal-header-actions no-print">
+                <button type="button" class="action-btn green-btn" id="printPiBtn">
+                    <i data-lucide="printer"></i>
+                    <span>Imprimir / Salvar PDF</span>
+                </button>
+                <button type="button" class="modal-close-btn" id="closePiModalBtn">&times;</button>
+            </div>
+
+            <!-- Timbrado Oficial da Rádio Grande FM 94.5 -->
+            <div class="pi-document" id="piDocumentContent">
+                <header class="pi-header">
+                    <div class="pi-header-left">
+                        <img src="assets/logo.png" alt="Grande FM 94.5" class="pi-logo">
+                        <div class="pi-brand-info">
+                            <h2>RÁDIO GRANDE FM 94.5 MHz</h2>
+                            <p><strong>Sociedade Radiodifusora Dourados Ltda</strong></p>
+                            <p>CNPJ: 03.123.456/0001-78 • Inscr. Estadual: 28.987.654-0</p>
+                            <p>Rua Joaquim Teixeira Alves, 1945 - Centro - Dourados / MS</p>
+                            <p>Tel: (67) 3411-9450 • comercial@grandefm.com.br</p>
+                        </div>
+                    </div>
+                    <div class="pi-header-right">
+                        <div class="pi-number-badge">
+                            <span>PEDIDO DE INSERÇÃO & CONTRATO</span>
+                            <h3 id="piDocNumber">PI-2026/0000</h3>
+                        </div>
+                        <div class="pi-date" id="piDocDate">Emissão: 08/10/2026</div>
+                    </div>
+                </header>
+
+                <div class="pi-divider"></div>
+
+                <!-- 1. Dados do Anunciante -->
+                <section class="pi-section">
+                    <h4 class="pi-section-title">1. IDENTIFICAÇÃO DO ANUNCIANTE / PATROCINADOR</h4>
+                    <div class="pi-grid-2">
+                        <div><strong>Razão Social:</strong> <span id="piClientName">-</span></div>
+                        <div><strong>CNPJ / CPF:</strong> <span id="piClientCnpj">-</span></div>
+                        <div><strong>Contato / Responsável:</strong> <span id="piClientContact">-</span></div>
+                        <div><strong>Telefone / WhatsApp:</strong> <span id="piClientPhone">-</span></div>
+                        <div><strong>E-mail Comercial:</strong> <span id="piClientEmail">-</span></div>
+                        <div><strong>Segmento de Mercado:</strong> <span id="piClientSegment">-</span></div>
+                    </div>
+                </section>
+
+                <!-- 2. Plano de Mídia e Veiculação -->
+                <section class="pi-section">
+                    <h4 class="pi-section-title">2. PLANO DE MÍDIA & PROGRAMAÇÃO CONTRATADA</h4>
+                    <table class="pi-table">
+                        <thead>
+                            <tr>
+                                <th>Formato / Material</th>
+                                <th>Inserções Diárias</th>
+                                <th>Faixa de Horário / Programa</th>
+                                <th>Período de Veiculação</th>
+                                <th>Total Inserções Estimadas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="piMediaType">Spots de 30 segundos</td>
+                                <td id="piSpotsPerDay">6 inserções/dia</td>
+                                <td id="piProgram">Rotativo Geral (06h às 22h)</td>
+                                <td id="piPeriod">01/01/2026 a 31/12/2026</td>
+                                <td id="piTotalSpots">180 inserções/mês</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- 3. Condições Comerciais e Faturamento -->
+                <section class="pi-section">
+                    <h4 class="pi-section-title">3. CONDIÇÕES COMERCIAIS & FATURAMENTO</h4>
+                    <div class="pi-grid-3">
+                        <div class="pi-val-box">
+                            <span class="pi-label">Investimento Mensal</span>
+                            <h3 class="pi-val-highlight" id="piMonthlyValue">R$ 0,00</h3>
+                        </div>
+                        <div class="pi-val-box">
+                            <span class="pi-label">Forma de Pagamento</span>
+                            <strong id="piPaymentMethod">Boleto Bancário / PIX</strong>
+                        </div>
+                        <div class="pi-val-box">
+                            <span class="pi-label">Vencimento da Fatura</span>
+                            <strong>Todo dia 10 de cada mês</strong>
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.75rem;">
+                        <strong>Executivo Comercial Responsável:</strong> <span id="piExecutiveName">-</span>
+                    </div>
+                </section>
+
+                <!-- 4. Cláusulas e Termos de Radiodifusão -->
+                <section class="pi-section pi-terms">
+                    <h4 class="pi-section-title">4. DISPOSIÇÕES GERAIS</h4>
+                    <ol>
+                        <li>A emissora compromete-se a irradiar a publicidade nos horários e quantidades estipulados acima, mediante apresentação prévia de material gravado em alta fidelidade.</li>
+                        <li>O anunciante deverá enviar novos textos, testemunhais ou áudios com antecedência mínima de 24 (vinte e quatro) horas úteis do horário de veiculação.</li>
+                        <li>A comprovação de irradiação dar-se-á através do mapa oficial gerado pelo sistema de automação e transmissão da emissora.</li>
+                        <li>O não pagamento da mensalidade até o 5º dia útil após o vencimento autoriza a suspensão imediata das veiculações até a quitação.</li>
+                    </ol>
+                </section>
+
+                <!-- 5. Assinaturas -->
+                <div class="pi-signatures">
+                    <div class="sig-line">
+                        <div class="sig-stroke"></div>
+                        <span>RÁDIO GRANDE FM 94.5 MHz<br><small>Diretoria Comercial</small></span>
+                    </div>
+                    <div class="sig-line">
+                        <div class="sig-stroke"></div>
+                        <span>ANUNCIANTE / CONTRATANTE<br><small id="piSignClientName">Representante Legal</small></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 5: EXTRATO INDIVIDUAL DE COMISSÕES (EXECUTIVO DE VENDAS)
+         ========================================================================== -->
+    <div id="statementModal" class="modal-backdrop hidden">
+        <div class="modal-card modal-lg">
+            <div class="modal-header-actions no-print">
+                <button type="button" class="action-btn green-btn" id="printStatementBtn">
+                    <i data-lucide="printer"></i>
+                    <span>Imprimir Recibo</span>
+                </button>
+                <button type="button" class="modal-close-btn" id="closeStatementModalBtn">&times;</button>
+            </div>
+
+            <div class="statement-content" id="statementPrintArea">
+                <div class="statement-header">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Executivo" class="statement-avatar" id="statementAvatar">
+                    <div class="statement-info">
+                        <span class="badge-tag gold" id="statementCode">Cód: 02</span>
+                        <h2 id="statementExecName">Mariana Alves Prado</h2>
+                        <p id="statementExecRole">Gerente Comercial de Vendas • Rádio Grande FM 94.5</p>
+                    </div>
+                </div>
+
+                <!-- Cards de Resumo -->
+                <div class="statement-kpi-grid">
+                    <div class="statement-kpi card-green">
+                        <span>Comissões Liberadas (Faturas Pagas)</span>
+                        <h3 id="stmtReleasedVal">R$ 0,00</h3>
+                        <small>Disponível para repasse</small>
+                    </div>
+                    <div class="statement-kpi card-yellow">
+                        <span>Comissões Pendentes (A Vencer)</span>
+                        <h3 id="stmtPendingVal">R$ 0,00</h3>
+                        <small>Aguardando quitação do cliente</small>
+                    </div>
+                    <div class="statement-kpi card-blue">
+                        <span>Total Geral Previsto</span>
+                        <h3 id="stmtTotalVal">R$ 0,00</h3>
+                        <small id="stmtClientsCount">0 clientes sob gestão</small>
+                    </div>
+                </div>
+
+                <!-- Tabela de Lançamentos do Executivo -->
+                <h4 style="margin: 1.5rem 0 0.75rem 0; font-weight: 600;">Detalhamento de Faturas & Comissões:</h4>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Data Venc.</th>
+                                <th>Cliente / Anunciante</th>
+                                <th>Descrição / Parcela</th>
+                                <th class="text-right">Fatura (R$)</th>
+                                <th class="text-right">Comissão (%)</th>
+                                <th class="text-right">Valor Comissão (R$)</th>
+                                <th class="text-center">Status Liberação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="statementTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 6: BUSCA GLOBAL RÁPIDA (SPOTLIGHT / CTRL + K)
+         ========================================================================== -->
+    <div id="searchModal" class="modal-backdrop hidden">
+        <div class="modal-card spotlight-card">
+            <div class="spotlight-input-wrapper">
+                <i data-lucide="search" class="spotlight-icon"></i>
+                <input type="text" id="spotlightInput" placeholder="Busque colaboradores, clientes anunciantes, contratos, despesas..." autocomplete="off">
+                <span class="spotlight-esc-hint"><kbd>ESC</kbd> para fechar</span>
+            </div>
+
+            <div class="spotlight-results" id="spotlightResults">
+                <div class="spotlight-empty">
+                    <i data-lucide="compass"></i>
+                    <p>Digite para buscar instantaneamente em todo o sistema GFM.</p>
+                </div>
+            </div>
         </div>
     </div>
 

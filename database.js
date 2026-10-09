@@ -428,6 +428,18 @@ function readDb() {
             db.users = DEFAULT_DATA.users;
             updated = true;
         }
+        if (!db.auditLogs) {
+            db.auditLogs = [
+                {
+                    id: 'log_init',
+                    timestamp: new Date().toISOString(),
+                    action: 'SISTEMA',
+                    details: 'Sistema Financeiro GFM v2.5 inicializado com sucesso',
+                    user: 'Sistema'
+                }
+            ];
+            updated = true;
+        }
 
         if (updated) writeDb(db);
         return db;
@@ -441,6 +453,13 @@ function writeDb(data) {
     initDb();
     try {
         fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+        // Auto snapshot safety copy
+        try {
+            const backupFile = path.join(DB_DIR, 'db_auto_backup.json');
+            fs.writeFileSync(backupFile, JSON.stringify(data, null, 2), 'utf-8');
+        } catch (e) {
+            // non-critical
+        }
         return true;
     } catch (err) {
         console.error('Erro ao salvar no banco de dados:', err);
@@ -448,7 +467,31 @@ function writeDb(data) {
     }
 }
 
+function logAudit(action, details, user = 'Admin GFM') {
+    try {
+        const db = readDb();
+        if (!db.auditLogs) db.auditLogs = [];
+        const entry = {
+            id: 'log_' + Date.now(),
+            timestamp: new Date().toISOString(),
+            action,
+            details,
+            user
+        };
+        db.auditLogs.unshift(entry);
+        if (db.auditLogs.length > 100) {
+            db.auditLogs = db.auditLogs.slice(0, 100);
+        }
+        writeDb(db);
+        return entry;
+    } catch (err) {
+        console.error('Erro ao registrar log de auditoria:', err);
+        return null;
+    }
+}
+
 module.exports = {
     readDb,
-    writeDb
+    writeDb,
+    logAudit
 };
