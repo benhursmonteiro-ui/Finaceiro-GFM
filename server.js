@@ -643,7 +643,7 @@ app.get('/api/dashboard/overview', (req, res) => {
 
     // KPI 2: Active Clients & Commercial Revenue
     const activeClients = clients.filter(c => c.status === 'Ativo');
-    const clientRevenue = activeClients.reduce((sum, c) => sum + (parseFloat(c.contractValue) || 0), 0);
+    const clientRevenue = activeClients.reduce((sum, c) => sum + (parseFloat(c.contractValue || c.value) || 0), 0);
 
     // KPI 3: Financial Cashflow Totals
     let totalReceitas = 0;
@@ -660,10 +660,12 @@ app.get('/api/dashboard/overview', (req, res) => {
     let totalCommissions = 0;
     const commissionsByExec = {};
     activeClients.forEach(c => {
-        const execs = c.executives || [{ executive: c.executive || '02', commission: parseFloat(c.commissionRate) || 10.0 }];
-        const clientVal = parseFloat(c.contractValue) || 0;
+        const execs = (c.executives && Array.isArray(c.executives) && c.executives.length > 0)
+            ? c.executives
+            : [{ executive: c.executive || '02', commission: parseFloat(c.commissionRate || c.commission) || 10.0 }];
+        const clientVal = parseFloat(c.contractValue || c.value) || 0;
         execs.forEach(e => {
-            const rate = parseFloat(e.commission) || 10.0;
+            const rate = parseFloat(e.commission || e.commissionRate) || 10.0;
             const commVal = (clientVal * rate) / 100;
             totalCommissions += commVal;
 

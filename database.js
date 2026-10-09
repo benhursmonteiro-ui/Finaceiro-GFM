@@ -100,6 +100,7 @@ const DEFAULT_DATA = {
             phone: '(67) 3411-9000',
             segment: 'Comércio Local',
             value: 12500.00,
+            contractValue: 12500.00,
             executive: '02',
             commission: 10.0,
             executives: [
@@ -108,6 +109,10 @@ const DEFAULT_DATA = {
             startDate: '2025-02-01',
             endDate: '2027-02-01',
             status: 'Ativo',
+            contactPerson: 'Marcos Vinicius (Gerente Comercial)',
+            mediaType: 'Spot Comercial 30"',
+            spotsPerDay: 8,
+            program: 'Manhã Total & Tarde Sertaneja',
             logo: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&auto=format&fit=crop&q=80'
         },
         {
@@ -118,6 +123,7 @@ const DEFAULT_DATA = {
             phone: '(67) 3422-5500',
             segment: 'Comércio Local',
             value: 18000.00,
+            contractValue: 18000.00,
             executive: '02',
             commission: 8.5,
             executives: [
@@ -127,6 +133,10 @@ const DEFAULT_DATA = {
             startDate: '2025-01-15',
             endDate: '2026-12-31',
             status: 'Ativo',
+            contactPerson: 'Camila Duarte (Marketing)',
+            mediaType: 'Spot Comercial 30"',
+            spotsPerDay: 6,
+            program: 'Jornal Grande FM 1ª Edição',
             logo: 'https://images.unsplash.com/photo-1549923746-c502d488b3ea?w=100&auto=format&fit=crop&q=80'
         },
         {
@@ -137,6 +147,7 @@ const DEFAULT_DATA = {
             phone: '(67) 99888-7766',
             segment: 'Agência de Publicidade',
             value: 25000.00,
+            contractValue: 25000.00,
             executive: '01',
             commission: 12.0,
             executives: [
@@ -145,6 +156,10 @@ const DEFAULT_DATA = {
             startDate: '2025-06-01',
             endDate: '2027-06-30',
             status: 'Ativo',
+            contactPerson: 'Rodrigo Medeiros (Diretor de Criação)',
+            mediaType: 'Testemunhal Ao Vivo',
+            spotsPerDay: 4,
+            program: 'Show da Tarde & Grande FM Hits',
             logo: 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=100&auto=format&fit=crop&q=80'
         },
         {
@@ -155,6 +170,7 @@ const DEFAULT_DATA = {
             phone: '(67) 3410-2020',
             segment: 'Eventos & Shows',
             value: 45000.00,
+            contractValue: 45000.00,
             executive: '02',
             commission: 5.0,
             executives: [
@@ -164,6 +180,10 @@ const DEFAULT_DATA = {
             startDate: '2026-03-01',
             endDate: '2026-09-10',
             status: 'Ativo',
+            contactPerson: 'Comissão Organizadora ExpoAgro',
+            mediaType: 'Cota de Patrocínio Master',
+            spotsPerDay: 12,
+            program: 'Grade Geral da Emissora (Rotativa)',
             logo: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=100&auto=format&fit=crop&q=80'
         }
     ],

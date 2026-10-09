@@ -1386,7 +1386,7 @@ document.addEventListener('DOMContentLoaded', () => {
             clientEmailInput.value = clientData.email;
             clientPhoneInput.value = clientData.phone;
             clientSegmentSelect.value = clientData.segment;
-            clientValueInput.value = clientData.value;
+            clientValueInput.value = clientData.value !== undefined ? clientData.value : (clientData.contractValue || '');
             
             let initialRows = clientData.executives && clientData.executives.length > 0
                 ? clientData.executives
@@ -1459,6 +1459,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const primaryExec = executivesList.length > 0 ? executivesList[0].executive : '';
         const primaryComm = executivesList.length > 0 ? executivesList[0].commission : 10.0;
 
+        const valParsed = parseFloat(clientValueInput.value) || 0;
         const newClient = {
             id: id || 'c' + Date.now().toString(),
             name: clientNameInput.value.trim(),
@@ -1467,7 +1468,8 @@ document.addEventListener('DOMContentLoaded', () => {
             phone: clientPhoneInput.value.trim(),
             contactPerson: clientContactPersonInput ? clientContactPersonInput.value.trim() : '',
             segment: clientSegmentSelect.value,
-            value: parseFloat(clientValueInput.value) || 0,
+            value: valParsed,
+            contractValue: valParsed,
             executive: primaryExec,
             commission: primaryComm,
             executives: executivesList,
@@ -2077,7 +2079,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         clients.forEach(client => {
             if (client.status === 'Ativo') {
-                const clientVal = parseFloat(client.value || 0);
+                const clientVal = parseFloat(client.value !== undefined ? client.value : client.contractValue) || 0;
                 if (client.executives && Array.isArray(client.executives) && client.executives.length > 0) {
                     client.executives.forEach(item => {
                         const code = item.executive;
@@ -2831,7 +2833,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const clients = await getClients();
             let csv = 'Razão Social / Nome;CNPJ/CPF;Segmento;Contato;Telefone;E-mail;Valor Mensal (R$);Início Contrato;Vencimento;Status;Formato Mídia;Inserções/Dia;Programa\n';
             clients.forEach(c => {
-                csv += `"${c.name}";"${c.cnpj}";"${c.segment}";"${c.contactPerson || ''}";"${c.phone}";"${c.email}";"${parseFloat(c.value || 0).toFixed(2)}";"${c.startDate}";"${c.endDate}";"${c.status}";"${c.mediaType || 'Spots 30s'}";"${c.spotsPerDay || 6}";"${c.program || 'Rotativo'}"\n`;
+                const cVal = parseFloat(c.value !== undefined ? c.value : c.contractValue || 0).toFixed(2);
+                csv += `"${c.name}";"${c.cnpj}";"${c.segment}";"${c.contactPerson || ''}";"${c.phone}";"${c.email}";"${cVal}";"${c.startDate}";"${c.endDate}";"${c.status}";"${c.mediaType || 'Spots 30s'}";"${c.spotsPerDay || 6}";"${c.program || 'Rotativo'}"\n`;
             });
             const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
